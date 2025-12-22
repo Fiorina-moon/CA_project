@@ -1,0 +1,946 @@
+{
+  "joints": [
+    {
+      "name": "_rootJoint",
+      "index": 0,
+      "head": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "tail": [
+        -1.9071797092984344e-12,
+        -2.480692842254939e-07,
+        1.9845558654196793e-06
+      ],
+      "parent": null
+    },
+    {
+      "name": "RigRoot_01",
+      "index": 1,
+      "head": [
+        -5.777082867025141e-16,
+        -7.514325273128009e-11,
+        6.011464659394505e-10
+      ],
+      "tail": [
+        -9.569929204644723e-08,
+        0.6337876319885254,
+        1.119999647140503
+      ],
+      "parent": "_rootJoint"
+    },
+    {
+      "name": "RigPelvis_02",
+      "index": 2,
+      "head": [
+        -9.569929204644723e-08,
+        0.6337876319885254,
+        1.119999647140503
+      ],
+      "tail": [
+        1.6187271967282868e-06,
+        0.8234251141548157,
+        1.221711277961731
+      ],
+      "parent": "RigRoot_01"
+    },
+    {
+      "name": "RigLBLeg1_03",
+      "index": 3,
+      "head": [
+        0.119961678981781,
+        0.620969295501709,
+        1.1422988176345825
+      ],
+      "tail": [
+        0.12448377162218094,
+        0.5754579901695251,
+        0.8075622916221619
+      ],
+      "parent": "RigPelvis_02"
+    },
+    {
+      "name": "RigLBLeg2_04",
+      "index": 4,
+      "head": [
+        0.12448377162218094,
+        0.5754579901695251,
+        0.8075622916221619
+      ],
+      "tail": [
+        0.08646485954523087,
+        0.8594966530799866,
+        0.5368424654006958
+      ],
+      "parent": "RigLBLeg1_03"
+    },
+    {
+      "name": "RigLBLeg3_05",
+      "index": 5,
+      "head": [
+        0.08646485954523087,
+        0.8594966530799866,
+        0.5368424654006958
+      ],
+      "tail": [
+        0.0946379154920578,
+        0.9017288684844971,
+        0.13659913837909698
+      ],
+      "parent": "RigLBLeg2_04"
+    },
+    {
+      "name": "RigLBLegAnkle_06",
+      "index": 6,
+      "head": [
+        0.0946379154920578,
+        0.9017288684844971,
+        0.13659913837909698
+      ],
+      "tail": [
+        0.09565307945013046,
+        0.9069744944572449,
+        0.08688542246818542
+      ],
+      "parent": "RigLBLeg3_05"
+    },
+    {
+      "name": "RigRBLeg1_07",
+      "index": 7,
+      "head": [
+        -0.11996204406023026,
+        0.6209704279899597,
+        1.1422990560531616
+      ],
+      "tail": [
+        -0.12454524636268616,
+        0.575451135635376,
+        0.8075639009475708
+      ],
+      "parent": "RigPelvis_02"
+    },
+    {
+      "name": "RigRBLeg2_08",
+      "index": 8,
+      "head": [
+        -0.12454524636268616,
+        0.575451135635376,
+        0.8075639009475708
+      ],
+      "tail": [
+        -0.0865439772605896,
+        0.8599047660827637,
+        0.5372778177261353
+      ],
+      "parent": "RigRBLeg1_07"
+    },
+    {
+      "name": "RigRBLeg3_09",
+      "index": 9,
+      "head": [
+        -0.0865439772605896,
+        0.8599047660827637,
+        0.5372778177261353
+      ],
+      "tail": [
+        -0.09481026232242584,
+        0.9020354151725769,
+        0.13702625036239624
+      ],
+      "parent": "RigRBLeg2_08"
+    },
+    {
+      "name": "RigRBLegAnkle_010",
+      "index": 10,
+      "head": [
+        -0.09481026232242584,
+        0.9020354151725769,
+        0.13702625036239624
+      ],
+      "tail": [
+        -0.09583701193332672,
+        0.9072684049606323,
+        0.08731144666671753
+      ],
+      "parent": "RigRBLeg3_09"
+    },
+    {
+      "name": "RigSpine1_011",
+      "index": 11,
+      "head": [
+        -1.5249539728756645e-06,
+        0.4621775150299072,
+        1.1800771951675415
+      ],
+      "tail": [
+        -1.508881950940122e-06,
+        0.21155792474746704,
+        1.175763726234436
+      ],
+      "parent": "RigPelvis_02"
+    },
+    {
+      "name": "RigSpine2_012",
+      "index": 12,
+      "head": [
+        -1.508881950940122e-06,
+        0.21155792474746704,
+        1.175763726234436
+      ],
+      "tail": [
+        3.44760628934182e-08,
+        -0.04001772031188011,
+        1.148000955581665
+      ],
+      "parent": "RigSpine1_011"
+    },
+    {
+      "name": "RigChest_013",
+      "index": 13,
+      "head": [
+        3.44760628934182e-08,
+        -0.04001772031188011,
+        1.148000955581665
+      ],
+      "tail": [
+        -0.08033723384141922,
+        -0.29175180196762085,
+        1.2922356128692627
+      ],
+      "parent": "RigSpine2_012"
+    },
+    {
+      "name": "RigLFLegCollarbone_014",
+      "index": 14,
+      "head": [
+        0.08033762127161026,
+        -0.2917516529560089,
+        1.2922354936599731
+      ],
+      "tail": [
+        0.13822823762893677,
+        -0.38698557019233704,
+        1.0567582845687866
+      ],
+      "parent": "RigChest_013"
+    },
+    {
+      "name": "RigLFLeg1_015",
+      "index": 15,
+      "head": [
+        0.13822823762893677,
+        -0.38698557019233704,
+        1.0567582845687866
+      ],
+      "tail": [
+        0.12649543583393097,
+        -0.2520729899406433,
+        0.8024033904075623
+      ],
+      "parent": "RigLFLegCollarbone_014"
+    },
+    {
+      "name": "RigLFLeg2_016",
+      "index": 16,
+      "head": [
+        0.12649543583393097,
+        -0.2520729899406433,
+        0.8024033904075623
+      ],
+      "tail": [
+        0.10089138150215149,
+        -0.2994891405105591,
+        0.43510493636131287
+      ],
+      "parent": "RigLFLeg1_015"
+    },
+    {
+      "name": "RigLFLeg3_017",
+      "index": 17,
+      "head": [
+        0.10089138150215149,
+        -0.2994891405105591,
+        0.43510493636131287
+      ],
+      "tail": [
+        0.10099156200885773,
+        -0.3078232705593109,
+        0.11907358467578888
+      ],
+      "parent": "RigLFLeg2_016"
+    },
+    {
+      "name": "RigLFLegAnkle_018",
+      "index": 18,
+      "head": [
+        0.10099156200885773,
+        -0.3078232705593109,
+        0.11907358467578888
+      ],
+      "tail": [
+        0.10100740939378738,
+        -0.3091413676738739,
+        0.06909096240997314
+      ],
+      "parent": "RigLFLeg3_017"
+    },
+    {
+      "name": "RigNeck1_019",
+      "index": 19,
+      "head": [
+        1.2715450736777711e-07,
+        -0.4816105365753174,
+        1.0933696031570435
+      ],
+      "tail": [
+        1.8340564622576494e-07,
+        -0.6703929305076599,
+        1.1913594007492065
+      ],
+      "parent": "RigChest_013"
+    },
+    {
+      "name": "RigNeck2_020",
+      "index": 20,
+      "head": [
+        1.8340564622576494e-07,
+        -0.6703929305076599,
+        1.1913594007492065
+      ],
+      "tail": [
+        1.9380571814053837e-07,
+        -0.8152687549591064,
+        1.316267967224121
+      ],
+      "parent": "RigNeck1_019"
+    },
+    {
+      "name": "RigNeck3_021",
+      "index": 21,
+      "head": [
+        1.9380571814053837e-07,
+        -0.8152687549591064,
+        1.316267967224121
+      ],
+      "tail": [
+        2.3518178693393565e-07,
+        -0.9139888882637024,
+        1.506101131439209
+      ],
+      "parent": "RigNeck2_020"
+    },
+    {
+      "name": "RigHead_00",
+      "index": 22,
+      "head": [
+        2.3518178693393565e-07,
+        -0.9139888882637024,
+        1.506101131439209
+      ],
+      "tail": [
+        -0.09790802747011185,
+        -1.0922212600708008,
+        1.5538402795791626
+      ],
+      "parent": "RigNeck3_021"
+    },
+    {
+      "name": "RigJaw1_022",
+      "index": 23,
+      "head": [
+        2.531049574372446e-07,
+        -0.9952700138092041,
+        1.5238072872161865
+      ],
+      "tail": [
+        2.6942149133901694e-07,
+        -1.1271852254867554,
+        1.3931390047073364
+      ],
+      "parent": "RigHead_00"
+    },
+    {
+      "name": "RigTongue1_023",
+      "index": 24,
+      "head": [
+        2.6942149133901694e-07,
+        -1.1271852254867554,
+        1.3931390047073364
+      ],
+      "tail": [
+        2.8751671266036283e-07,
+        -1.2233755588531494,
+        1.3711661100387573
+      ],
+      "parent": "RigJaw1_022"
+    },
+    {
+      "name": "RigTongue2_024",
+      "index": 25,
+      "head": [
+        2.8751671266036283e-07,
+        -1.2233755588531494,
+        1.3711661100387573
+      ],
+      "tail": [
+        2.936879468506959e-07,
+        -1.2802002429962158,
+        1.3517463207244873
+      ],
+      "parent": "RigTongue1_023"
+    },
+    {
+      "name": "RigTongue3_025",
+      "index": 26,
+      "head": [
+        2.936879468506959e-07,
+        -1.2802002429962158,
+        1.3517463207244873
+      ],
+      "tail": [
+        2.9882625085519976e-07,
+        -1.327513575553894,
+        1.3355770111083984
+      ],
+      "parent": "RigTongue2_024"
+    },
+    {
+      "name": "RigLEar1_026",
+      "index": 27,
+      "head": [
+        0.10509354621171951,
+        -0.9402480125427246,
+        1.6102744340896606
+      ],
+      "tail": [
+        0.14005771279335022,
+        -0.9489843249320984,
+        1.644932508468628
+      ],
+      "parent": "RigHead_00"
+    },
+    {
+      "name": "RigLEyelid_027",
+      "index": 28,
+      "head": [
+        0.09790890663862228,
+        -1.0922209024429321,
+        1.5538406372070312
+      ],
+      "tail": [
+        0.12134522944688797,
+        -1.1348841190338135,
+        1.5652680397033691
+      ],
+      "parent": "RigHead_00"
+    },
+    {
+      "name": "RigREar1_028",
+      "index": 29,
+      "head": [
+        -0.10509315133094788,
+        -0.9402481913566589,
+        1.610274314880371
+      ],
+      "tail": [
+        -0.14005735516548157,
+        -0.9489845633506775,
+        1.6449323892593384
+      ],
+      "parent": "RigHead_00"
+    },
+    {
+      "name": "RigREyelid_029",
+      "index": 30,
+      "head": [
+        -0.09790802747011185,
+        -1.0922212600708008,
+        1.5538402795791626
+      ],
+      "tail": [
+        -0.12134425342082977,
+        -1.1348845958709717,
+        1.565267562866211
+      ],
+      "parent": "RigHead_00"
+    },
+    {
+      "name": "RigRFLegCollarbone_030",
+      "index": 31,
+      "head": [
+        -0.08033723384141922,
+        -0.29175180196762085,
+        1.2922356128692627
+      ],
+      "tail": [
+        -0.13822807371616364,
+        -0.3869853913784027,
+        1.0567585229873657
+      ],
+      "parent": "RigChest_013"
+    },
+    {
+      "name": "RigRFLeg1_031",
+      "index": 32,
+      "head": [
+        -0.13822807371616364,
+        -0.3869853913784027,
+        1.0567585229873657
+      ],
+      "tail": [
+        -0.12636849284172058,
+        -0.2520732581615448,
+        0.8024088740348816
+      ],
+      "parent": "RigRFLegCollarbone_030"
+    },
+    {
+      "name": "RigRFLeg2_032",
+      "index": 33,
+      "head": [
+        -0.12636849284172058,
+        -0.2520732581615448,
+        0.8024088740348816
+      ],
+      "tail": [
+        -0.10083266347646713,
+        -0.29949134588241577,
+        0.4351062774658203
+      ],
+      "parent": "RigRFLeg1_031"
+    },
+    {
+      "name": "RigRFLeg3_033",
+      "index": 34,
+      "head": [
+        -0.10083266347646713,
+        -0.29949134588241577,
+        0.4351062774658203
+      ],
+      "tail": [
+        -0.10090931504964828,
+        -0.30780598521232605,
+        0.11907445639371872
+      ],
+      "parent": "RigRFLeg2_032"
+    },
+    {
+      "name": "RigRFLegAnkle_034",
+      "index": 35,
+      "head": [
+        -0.10090931504964828,
+        -0.30780598521232605,
+        0.11907445639371872
+      ],
+      "tail": [
+        -0.10092143714427948,
+        -0.3091210126876831,
+        0.06909175217151642
+      ],
+      "parent": "RigRFLeg3_033"
+    },
+    {
+      "name": "RigTail1_035",
+      "index": 36,
+      "head": [
+        1.6187271967282868e-06,
+        0.8234251141548157,
+        1.221711277961731
+      ],
+      "tail": [
+        1.5873475831540418e-06,
+        0.8832381367683411,
+        1.144148349761963
+      ],
+      "parent": "RigPelvis_02"
+    },
+    {
+      "name": "RigTail2_036",
+      "index": 37,
+      "head": [
+        1.5873475831540418e-06,
+        0.8832381367683411,
+        1.144148349761963
+      ],
+      "tail": [
+        1.5713288803453906e-06,
+        0.9137715101242065,
+        1.1045539379119873
+      ],
+      "parent": "RigTail1_035"
+    }
+  ],
+  "bones": [
+    {
+      "name": "_rootJoint",
+      "start_joint": 0,
+      "end_joint": 0,
+      "parent": null,
+      "children": [
+        "RigRoot_01"
+      ]
+    },
+    {
+      "name": "RigRoot_01",
+      "start_joint": 1,
+      "end_joint": 1,
+      "parent": "_rootJoint",
+      "children": [
+        "RigPelvis_02"
+      ]
+    },
+    {
+      "name": "RigPelvis_02",
+      "start_joint": 2,
+      "end_joint": 2,
+      "parent": "RigRoot_01",
+      "children": [
+        "RigLBLeg1_03",
+        "RigRBLeg1_07",
+        "RigSpine1_011",
+        "RigTail1_035"
+      ]
+    },
+    {
+      "name": "RigLBLeg1_03",
+      "start_joint": 3,
+      "end_joint": 3,
+      "parent": "RigPelvis_02",
+      "children": [
+        "RigLBLeg2_04"
+      ]
+    },
+    {
+      "name": "RigLBLeg2_04",
+      "start_joint": 4,
+      "end_joint": 4,
+      "parent": "RigLBLeg1_03",
+      "children": [
+        "RigLBLeg3_05"
+      ]
+    },
+    {
+      "name": "RigLBLeg3_05",
+      "start_joint": 5,
+      "end_joint": 5,
+      "parent": "RigLBLeg2_04",
+      "children": [
+        "RigLBLegAnkle_06"
+      ]
+    },
+    {
+      "name": "RigLBLegAnkle_06",
+      "start_joint": 6,
+      "end_joint": 6,
+      "parent": "RigLBLeg3_05",
+      "children": []
+    },
+    {
+      "name": "RigRBLeg1_07",
+      "start_joint": 7,
+      "end_joint": 7,
+      "parent": "RigPelvis_02",
+      "children": [
+        "RigRBLeg2_08"
+      ]
+    },
+    {
+      "name": "RigRBLeg2_08",
+      "start_joint": 8,
+      "end_joint": 8,
+      "parent": "RigRBLeg1_07",
+      "children": [
+        "RigRBLeg3_09"
+      ]
+    },
+    {
+      "name": "RigRBLeg3_09",
+      "start_joint": 9,
+      "end_joint": 9,
+      "parent": "RigRBLeg2_08",
+      "children": [
+        "RigRBLegAnkle_010"
+      ]
+    },
+    {
+      "name": "RigRBLegAnkle_010",
+      "start_joint": 10,
+      "end_joint": 10,
+      "parent": "RigRBLeg3_09",
+      "children": []
+    },
+    {
+      "name": "RigSpine1_011",
+      "start_joint": 11,
+      "end_joint": 11,
+      "parent": "RigPelvis_02",
+      "children": [
+        "RigSpine2_012"
+      ]
+    },
+    {
+      "name": "RigSpine2_012",
+      "start_joint": 12,
+      "end_joint": 12,
+      "parent": "RigSpine1_011",
+      "children": [
+        "RigChest_013"
+      ]
+    },
+    {
+      "name": "RigChest_013",
+      "start_joint": 13,
+      "end_joint": 13,
+      "parent": "RigSpine2_012",
+      "children": [
+        "RigLFLegCollarbone_014",
+        "RigNeck1_019",
+        "RigRFLegCollarbone_030"
+      ]
+    },
+    {
+      "name": "RigLFLegCollarbone_014",
+      "start_joint": 14,
+      "end_joint": 14,
+      "parent": "RigChest_013",
+      "children": [
+        "RigLFLeg1_015"
+      ]
+    },
+    {
+      "name": "RigLFLeg1_015",
+      "start_joint": 15,
+      "end_joint": 15,
+      "parent": "RigLFLegCollarbone_014",
+      "children": [
+        "RigLFLeg2_016"
+      ]
+    },
+    {
+      "name": "RigLFLeg2_016",
+      "start_joint": 16,
+      "end_joint": 16,
+      "parent": "RigLFLeg1_015",
+      "children": [
+        "RigLFLeg3_017"
+      ]
+    },
+    {
+      "name": "RigLFLeg3_017",
+      "start_joint": 17,
+      "end_joint": 17,
+      "parent": "RigLFLeg2_016",
+      "children": [
+        "RigLFLegAnkle_018"
+      ]
+    },
+    {
+      "name": "RigLFLegAnkle_018",
+      "start_joint": 18,
+      "end_joint": 18,
+      "parent": "RigLFLeg3_017",
+      "children": []
+    },
+    {
+      "name": "RigNeck1_019",
+      "start_joint": 19,
+      "end_joint": 19,
+      "parent": "RigChest_013",
+      "children": [
+        "RigNeck2_020"
+      ]
+    },
+    {
+      "name": "RigNeck2_020",
+      "start_joint": 20,
+      "end_joint": 20,
+      "parent": "RigNeck1_019",
+      "children": [
+        "RigNeck3_021"
+      ]
+    },
+    {
+      "name": "RigNeck3_021",
+      "start_joint": 21,
+      "end_joint": 21,
+      "parent": "RigNeck2_020",
+      "children": [
+        "RigHead_00"
+      ]
+    },
+    {
+      "name": "RigHead_00",
+      "start_joint": 22,
+      "end_joint": 22,
+      "parent": "RigNeck3_021",
+      "children": [
+        "RigJaw1_022",
+        "RigLEar1_026",
+        "RigLEyelid_027",
+        "RigREar1_028",
+        "RigREyelid_029"
+      ]
+    },
+    {
+      "name": "RigJaw1_022",
+      "start_joint": 23,
+      "end_joint": 23,
+      "parent": "RigHead_00",
+      "children": [
+        "RigTongue1_023"
+      ]
+    },
+    {
+      "name": "RigTongue1_023",
+      "start_joint": 24,
+      "end_joint": 24,
+      "parent": "RigJaw1_022",
+      "children": [
+        "RigTongue2_024"
+      ]
+    },
+    {
+      "name": "RigTongue2_024",
+      "start_joint": 25,
+      "end_joint": 25,
+      "parent": "RigTongue1_023",
+      "children": [
+        "RigTongue3_025"
+      ]
+    },
+    {
+      "name": "RigTongue3_025",
+      "start_joint": 26,
+      "end_joint": 26,
+      "parent": "RigTongue2_024",
+      "children": []
+    },
+    {
+      "name": "RigLEar1_026",
+      "start_joint": 27,
+      "end_joint": 27,
+      "parent": "RigHead_00",
+      "children": []
+    },
+    {
+      "name": "RigLEyelid_027",
+      "start_joint": 28,
+      "end_joint": 28,
+      "parent": "RigHead_00",
+      "children": []
+    },
+    {
+      "name": "RigREar1_028",
+      "start_joint": 29,
+      "end_joint": 29,
+      "parent": "RigHead_00",
+      "children": []
+    },
+    {
+      "name": "RigREyelid_029",
+      "start_joint": 30,
+      "end_joint": 30,
+      "parent": "RigHead_00",
+      "children": []
+    },
+    {
+      "name": "RigRFLegCollarbone_030",
+      "start_joint": 31,
+      "end_joint": 31,
+      "parent": "RigChest_013",
+      "children": [
+        "RigRFLeg1_031"
+      ]
+    },
+    {
+      "name": "RigRFLeg1_031",
+      "start_joint": 32,
+      "end_joint": 32,
+      "parent": "RigRFLegCollarbone_030",
+      "children": [
+        "RigRFLeg2_032"
+      ]
+    },
+    {
+      "name": "RigRFLeg2_032",
+      "start_joint": 33,
+      "end_joint": 33,
+      "parent": "RigRFLeg1_031",
+      "children": [
+        "RigRFLeg3_033"
+      ]
+    },
+    {
+      "name": "RigRFLeg3_033",
+      "start_joint": 34,
+      "end_joint": 34,
+      "parent": "RigRFLeg2_032",
+      "children": [
+        "RigRFLegAnkle_034"
+      ]
+    },
+    {
+      "name": "RigRFLegAnkle_034",
+      "start_joint": 35,
+      "end_joint": 35,
+      "parent": "RigRFLeg3_033",
+      "children": []
+    },
+    {
+      "name": "RigTail1_035",
+      "start_joint": 36,
+      "end_joint": 36,
+      "parent": "RigPelvis_02",
+      "children": [
+        "RigTail2_036"
+      ]
+    },
+    {
+      "name": "RigTail2_036",
+      "start_joint": 37,
+      "end_joint": 37,
+      "parent": "RigTail1_035",
+      "children": []
+    }
+  ],
+  "hierarchy": {
+    "RigRoot_01": "_rootJoint",
+    "RigPelvis_02": "RigRoot_01",
+    "RigLBLeg1_03": "RigPelvis_02",
+    "RigLBLeg2_04": "RigLBLeg1_03",
+    "RigLBLeg3_05": "RigLBLeg2_04",
+    "RigLBLegAnkle_06": "RigLBLeg3_05",
+    "RigRBLeg1_07": "RigPelvis_02",
+    "RigRBLeg2_08": "RigRBLeg1_07",
+    "RigRBLeg3_09": "RigRBLeg2_08",
+    "RigRBLegAnkle_010": "RigRBLeg3_09",
+    "RigSpine1_011": "RigPelvis_02",
+    "RigSpine2_012": "RigSpine1_011",
+    "RigChest_013": "RigSpine2_012",
+    "RigLFLegCollarbone_014": "RigChest_013",
+    "RigLFLeg1_015": "RigLFLegCollarbone_014",
+    "RigLFLeg2_016": "RigLFLeg1_015",
+    "RigLFLeg3_017": "RigLFLeg2_016",
+    "RigLFLegAnkle_018": "RigLFLeg3_017",
+    "RigNeck1_019": "RigChest_013",
+    "RigNeck2_020": "RigNeck1_019",
+    "RigNeck3_021": "RigNeck2_020",
+    "RigHead_00": "RigNeck3_021",
+    "RigJaw1_022": "RigHead_00",
+    "RigTongue1_023": "RigJaw1_022",
+    "RigTongue2_024": "RigTongue1_023",
+    "RigTongue3_025": "RigTongue2_024",
+    "RigLEar1_026": "RigHead_00",
+    "RigLEyelid_027": "RigHead_00",
+    "RigREar1_028": "RigHead_00",
+    "RigREyelid_029": "RigHead_00",
+    "RigRFLegCollarbone_030": "RigChest_013",
+    "RigRFLeg1_031": "RigRFLegCollarbone_030",
+    "RigRFLeg2_032": "RigRFLeg1_031",
+    "RigRFLeg3_033": "RigRFLeg2_032",
+    "RigRFLegAnkle_034": "RigRFLeg3_033",
+    "RigTail1_035": "RigPelvis_02",
+    "RigTail2_036": "RigTail1_035"
+  }
+}

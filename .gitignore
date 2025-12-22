@@ -1,0 +1,87 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+CA/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# PyCharm
+.idea/
+
+# 项目生成文件
+output/
+data/weights/*.npz
+data/weights/*.json
+data/animations/*.json
+
+# 保留示例动画
+!data/animations/test_walk.json
+
+# 输出文件夹内容
+output/frames/*.png
+output/videos/*.mp4
+output/debug/*.png
+
+# 但保留目录结构
+!output/frames/.gitkeep
+!output/videos/.gitkeep
+!output/debug/.gitkeep
+
+# 测试临时文件
+tests/__pycache__/
+tests/*.pyc
+
+# 日志文件
+*.log
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 大文件（如果有的话）
+*.npz
+*.h5
+*.pth
+
+# 环境变量
+.env
+.env.local
