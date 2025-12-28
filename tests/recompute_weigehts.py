@@ -12,7 +12,7 @@ sys.path.insert(0, str(project_root))
 from src.config import ELK_OBJ_PATH, SKELETON_JSON_PATH, WEIGHTS_DIR
 from src.core.mesh_loader import OBJLoader
 from src.core.skeleton_loader import SkeletonLoader
-from src.skinning.weight_calculator import WeightCalculator
+from src.skinning.weight_calculator import WeightCalculatorImproved as WeightCalculator
 from src.utils.file_io import save_weights_npz
 import numpy as np
 
@@ -41,7 +41,7 @@ def recompute_weights(max_influences=4, influence_radius=None):
     print("\n[2/4] 计算权重...")
     calculator = WeightCalculator(
         max_influences=max_influences,
-        influence_radius=influence_radius
+        influence_radius_ratio=influence_radius if influence_radius else 0.45  # 默认45%
     )
     weights = calculator.compute_weights_bilinear(mesh, skeleton)
     
@@ -122,18 +122,19 @@ def recompute_weights(max_influences=4, influence_radius=None):
 
 if __name__ == "__main__":
     print("\n推荐设置:")
-    print("  max_influences=4  (每个顶点最多4个骨骼)")
-    print("  influence_radius=自动 (模型尺寸的30%)")
+    print("  max_influences=6  (每个顶点最多6个骨骼)")
+    print("  influence_radius_ratio=0.45  (模型尺寸的45%)")
     print()
     
     choice = input("使用推荐设置? (y/n): ").lower()
     
     if choice == 'y' or choice == '':
-        recompute_weights(max_influences=4)
+        recompute_weights(max_influences=6, influence_radius=0.45)
     else:
         try:
-            max_inf = int(input("max_influences (推荐4): "))
-            recompute_weights(max_influences=max_inf)
+            max_inf = int(input("max_influences (推荐6): ") or "6")
+            radius_ratio = float(input("influence_radius_ratio (推荐0.45): ") or "0.45")
+            recompute_weights(max_influences=max_inf, influence_radius=radius_ratio)
         except:
             print("使用默认值")
-            recompute_weights(max_influences=4)
+            recompute_weights(max_influences=6, influence_radius=0.45)

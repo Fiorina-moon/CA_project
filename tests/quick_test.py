@@ -85,7 +85,7 @@ def test_animation(animation_name):
         renderer.camera.elevation = 5
     elif 'head' in animation.name.lower() or 'nod' in animation.name.lower():
         print("\n📷 相机设置: 侧视角 (看头部)")
-        renderer.camera.azimuth = 0
+        renderer.camera.azimuth = 180
         renderer.camera.elevation = 15
     else:
         print("\n📷 相机设置: 斜侧视角 (看整体)")
