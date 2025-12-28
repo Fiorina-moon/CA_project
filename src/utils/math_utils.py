@@ -1,5 +1,5 @@
 """
-数学工具：向量、矩阵运算
+数学工具：向量、矩阵运算 - 修复版
 """
 import numpy as np
 from typing import List, Tuple, Union
@@ -97,6 +97,15 @@ class Matrix4:
         return mat
     
     @staticmethod
+    def scale(x: float, y: float, z: float) -> 'Matrix4':
+        """缩放矩阵"""
+        mat = Matrix4()
+        mat.data[0, 0] = x
+        mat.data[1, 1] = y
+        mat.data[2, 2] = z
+        return mat
+    
+    @staticmethod
     def rotation_x(angle: float) -> 'Matrix4':
         """绕X轴旋转（弧度）"""
         mat = Matrix4()
@@ -129,14 +138,27 @@ class Matrix4:
         mat.data[1, 1] = c
         return mat
     
+    def inverse(self) -> 'Matrix4':
+        """矩阵求逆"""
+        try:
+            inv_data = np.linalg.inv(self.data)
+            return Matrix4(inv_data)
+        except np.linalg.LinAlgError:
+            # 如果矩阵不可逆，返回单位矩阵
+            print("Warning: Matrix is singular, returning identity")
+            return Matrix4.identity()
+    
     def __mul__(self, other: 'Matrix4') -> 'Matrix4':
         """矩阵乘法"""
         return Matrix4(np.dot(self.data, other.data))
     
     def transform_point(self, point: Vector3) -> Vector3:
-        """变换一个点"""
+        """变换一个点（齐次坐标）"""
         p = np.array([point.x, point.y, point.z, 1.0], dtype=np.float32)
         result = np.dot(self.data, p)
+        # 齐次坐标归一化（通常w=1，但保险起见）
+        if abs(result[3]) > 1e-8:
+            return Vector3(result[0]/result[3], result[1]/result[3], result[2]/result[3])
         return Vector3(result[0], result[1], result[2])
     
     def __repr__(self) -> str:

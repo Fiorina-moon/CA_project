@@ -1,0 +1,109 @@
+{
+    "name": "walk_cycle",
+    "duration": 2.0,
+    "keyframes": {
+      "RigLBLeg1_03": [
+        {"time": 0.0, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigLBLeg2_04": [
+        {"time": 0.0, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [-0.4, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigLBLeg3_05": [
+        {"time": 0.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0.4, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigRBLeg1_07": [
+        {"time": 0.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigRBLeg2_08": [
+        {"time": 0.0, "rotation": [-0.4, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [-0.4, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigRBLeg3_09": [
+        {"time": 0.0, "rotation": [0.4, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0.4, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigLFLeg1_015": [
+        {"time": 0.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigLFLeg2_016": [
+        {"time": 0.0, "rotation": [-0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0.25, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [-0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [-0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigLFLeg3_017": [
+        {"time": 0.0, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [-0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigRFLeg1_031": [
+        {"time": 0.0, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [-0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigRFLeg2_032": [
+        {"time": 0.0, "rotation": [0.25, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [-0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [-0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0.25, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigRFLeg3_033": [
+        {"time": 0.0, "rotation": [-0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0.2, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0.3, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [-0.1, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [-0.15, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigSpine1_011": [
+        {"time": 0.0, "rotation": [0, 0, 0.03], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0, 0, -0.03], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0, 0, 0.03], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigTail1_035": [
+        {"time": 0.0, "rotation": [0, 0, 0.1], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0, 0, -0.15], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0, 0, 0.1], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0, 0, -0.15], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0, 0, 0.1], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ],
+      "RigTail2_036": [
+        {"time": 0.0, "rotation": [0, 0, 0.15], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 0.5, "rotation": [0, 0, -0.2], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.0, "rotation": [0, 0, 0.15], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 1.5, "rotation": [0, 0, -0.2], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+        {"time": 2.0, "rotation": [0, 0, 0.15], "translation": [0, 0, 0], "scale": [1, 1, 1]}
+      ]
+    }
+  }

@@ -46,7 +46,6 @@ CA/
 output/
 data/weights/*.npz
 data/weights/*.json
-data/animations/*.json
 
 # 保留示例动画
 !data/animations/test_walk.json
