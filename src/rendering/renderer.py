@@ -1,5 +1,5 @@
 """
-OpenGL渲染器
+OpenGL渲染器 - 修复版（支持变形法线）
 """
 import numpy as np
 from typing import List
@@ -39,6 +39,9 @@ class Renderer:
         self.show_wireframe = False
         self.show_skeleton = True
         self.background_color = (0.2, 0.2, 0.2, 1.0)
+        
+        # 法线缓存
+        self._deformed_normals = None
     
     def initialize(self) -> bool:
         """初始化OpenGL"""
@@ -129,8 +132,12 @@ class Renderer:
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     
     def _render_deformed_mesh(self, mesh: Mesh, deformer: SkinDeformer):
-        """渲染变形后的网格"""
+        """渲染变形后的网格（正确计算法线）"""
+        # 获取变形后的顶点
         vertices = deformer.get_deformed_vertices()
+        
+        # 重新计算法线
+        normals = self._compute_normals(mesh, vertices)
         
         glColor3f(0.8, 0.6, 0.4)
         
@@ -141,18 +148,60 @@ class Renderer:
         
         glBegin(GL_TRIANGLES)
         for face in mesh.faces:
-            for idx in face.vertex_indices:
+            # 计算面法线（用于平滑着色可以用顶点法线）
+            v0 = vertices[face.vertex_indices[0]]
+            v1 = vertices[face.vertex_indices[1]]
+            v2 = vertices[face.vertex_indices[2]]
+            
+            # 使用预计算的顶点法线
+            for i, idx in enumerate(face.vertex_indices):
                 v = vertices[idx]
+                n = normals[idx]
                 
-                # 简单法线（可优化）
-                if mesh.normals and idx < len(mesh.normals):
-                    n = mesh.normals[idx]
-                    glNormal3f(n.x, n.y, n.z)
-                
+                glNormal3f(n.x, n.y, n.z)
                 glVertex3f(v.x, v.y, v.z)
         glEnd()
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+    
+    def _compute_normals(self, mesh: Mesh, vertices: List[Vector3]) -> List[Vector3]:
+        """
+        为变形后的顶点重新计算法线
+        
+        方法：对每个顶点，平均其相邻面的法线
+        """
+        num_vertices = len(vertices)
+        normals = [Vector3(0, 0, 0) for _ in range(num_vertices)]
+        
+        # 对每个面计算法线
+        for face in mesh.faces:
+            v0 = vertices[face.vertex_indices[0]]
+            v1 = vertices[face.vertex_indices[1]]
+            v2 = vertices[face.vertex_indices[2]]
+            
+            # 计算面法线（叉积）
+            edge1 = v1 - v0
+            edge2 = v2 - v0
+            
+            face_normal = Vector3.cross(edge1, edge2)
+            length = face_normal.length()
+            
+            if length > 1e-8:
+                face_normal = face_normal * (1.0 / length)  # 归一化
+            
+            # 累加到顶点法线
+            for idx in face.vertex_indices:
+                normals[idx] = normals[idx] + face_normal
+        
+        # 归一化顶点法线
+        for i in range(num_vertices):
+            length = normals[i].length()
+            if length > 1e-8:
+                normals[i] = normals[i] * (1.0 / length)
+            else:
+                normals[i] = Vector3(0, 1, 0)  # 默认法线
+        
+        return normals
     
     def _render_skeleton(self, skeleton: Skeleton):
         """渲染骨架 - 使用简化的当前位置"""

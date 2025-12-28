@@ -43,6 +43,14 @@ class Bone:
         self.end_joint = end_joint
         self.index = index
         self.name = f"{start_joint.name}_to_{end_joint.name}"
+    
+    def get_start_position(self) -> Vector3:
+        """获取起点位置（绑定姿态）"""
+        return self.start_joint.head
+    
+    def get_end_position(self) -> Vector3:
+        """获取终点位置（绑定姿态）"""
+        return self.end_joint.head
 
 
 class Skeleton:

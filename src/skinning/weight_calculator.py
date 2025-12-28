@@ -1,5 +1,5 @@
 """
-蒙皮权重计算器 - 双线性插值法
+蒙皮权重计算器 - 改进版
 """
 import numpy as np
 from typing import List, Tuple
@@ -10,18 +10,27 @@ from utils.geometry import point_to_segment_distance
 
 
 class WeightCalculator:
-    """权重计算器"""
+    """权重计算器 - 改进版"""
     
-    def __init__(self, epsilon: float = 1e-6):
+    def __init__(self, max_influences: int = 4, influence_radius: float = None, epsilon: float = 1e-6):
         """
         Args:
-            epsilon: 极小值阈值，用于处理重合情况
+            max_influences: 每个顶点最多受几个骨骼影响 (推荐4-6)
+            influence_radius: 影响半径，超过这个距离的骨骼不影响顶点 (None=自动计算)
+            epsilon: 极小值阈值
         """
+        self.max_influences = max_influences
+        self.influence_radius = influence_radius
         self.epsilon = epsilon
     
     def compute_weights_bilinear(self, mesh: Mesh, skeleton: Skeleton) -> np.ndarray:
         """
-        使用双线性插值计算蒙皮权重
+        使用改进的距离加权法计算蒙皮权重
+        
+        改进：
+        1. 支持4-6个骨骼影响（而非2个）
+        2. 添加影响半径限制
+        3. 使用指数衰减权重
         
         Args:
             mesh: 网格模型
@@ -33,9 +42,24 @@ class WeightCalculator:
         num_vertices = mesh.get_vertex_count()
         num_bones = skeleton.get_bone_count()
         
-        print(f"\n计算蒙皮权重...")
+        print(f"\n计算蒙皮权重 (改进版)...")
         print(f"  顶点数: {num_vertices}")
         print(f"  骨骼数: {num_bones}")
+        print(f"  最大影响数: {self.max_influences}")
+        
+        # 自动计算影响半径
+        if self.influence_radius is None:
+            # 根据模型大小自动设置
+            bbox_min, bbox_max = mesh.get_bounding_box()
+            model_size = max(
+                bbox_max.x - bbox_min.x,
+                bbox_max.y - bbox_min.y,
+                bbox_max.z - bbox_min.z
+            )
+            self.influence_radius = model_size * 0.3  # 30%的模型尺寸
+            print(f"  自动影响半径: {self.influence_radius:.4f}")
+        else:
+            print(f"  影响半径: {self.influence_radius:.4f}")
         
         # 初始化权重矩阵
         weights = np.zeros((num_vertices, num_bones), dtype=np.float32)
@@ -47,32 +71,48 @@ class WeightCalculator:
             
             # 计算到所有骨骼的距离
             distances = []
-            for bone in skeleton.bones:
+            for bone_idx, bone in enumerate(skeleton.bones):
                 dist = point_to_segment_distance(
                     vertex,
                     bone.get_start_position(),
                     bone.get_end_position()
                 )
-                distances.append(dist)
+                distances.append((bone_idx, dist))
             
-            # 找到距离最近的两个骨骼
-            sorted_indices = np.argsort(distances)
-            nearest_idx1 = sorted_indices[0]
-            nearest_idx2 = sorted_indices[1]
+            # 按距离排序
+            distances.sort(key=lambda x: x[1])
             
-            d1 = distances[nearest_idx1]
-            d2 = distances[nearest_idx2]
+            # 只保留影响半径内的骨骼
+            valid_bones = []
+            for bone_idx, dist in distances:
+                if dist <= self.influence_radius:
+                    valid_bones.append((bone_idx, dist))
+                if len(valid_bones) >= self.max_influences:
+                    break
             
-            # 双线性插值
-            total_dist = d1 + d2
+            # 如果没有骨骼在影响半径内，使用最近的1个
+            if len(valid_bones) == 0:
+                valid_bones = [distances[0]]
             
-            if total_dist < self.epsilon:
-                # 特殊情况：顶点非常接近某个骨骼
-                weights[i, nearest_idx1] = 1.0
+            # 计算权重（使用指数衰减）
+            total_weight = 0.0
+            bone_weights = []
+            
+            for bone_idx, dist in valid_bones:
+                # 权重 = exp(-dist^2 / (2 * sigma^2))
+                # sigma = influence_radius / 3 (3-sigma rule)
+                sigma = self.influence_radius / 3.0
+                weight = np.exp(-(dist ** 2) / (2 * sigma ** 2))
+                bone_weights.append((bone_idx, weight))
+                total_weight += weight
+            
+            # 归一化权重
+            if total_weight > self.epsilon:
+                for bone_idx, weight in bone_weights:
+                    weights[i, bone_idx] = weight / total_weight
             else:
-                # 交叉分配：距离越近权重越大
-                weights[i, nearest_idx1] = d2 / total_dist
-                weights[i, nearest_idx2] = d1 / total_dist
+                # 特殊情况：顶点完全重合
+                weights[i, valid_bones[0][0]] = 1.0
         
         print(f"✓ 权重计算完成")
         
@@ -143,3 +183,8 @@ class WeightCalculator:
         sparsity = 1.0 - (non_zero / total)
         
         print(f"  权重稀疏度: {sparsity*100:.2f}% ({non_zero}/{total} 非零)")
+        
+        # 统计每个顶点的影响骨骼数
+        influences_per_vertex = (weights > 1e-6).sum(axis=1)
+        print(f"  平均影响骨骼数: {influences_per_vertex.mean():.2f}")
+        print(f"  最大影响骨骼数: {influences_per_vertex.max()}")
