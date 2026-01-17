@@ -138,6 +138,26 @@ class Matrix4:
         mat.data[1, 1] = c
         return mat
     
+    @staticmethod
+    def from_euler(rx: float, ry: float, rz: float) -> 'Matrix4':
+        """
+        从欧拉角创建旋转矩阵（XYZ顺序）
+        
+        Args:
+            rx: 绕X轴旋转（弧度）
+            ry: 绕Y轴旋转（弧度）
+            rz: 绕Z轴旋转（弧度）
+        
+        Returns:
+            旋转矩阵
+        """
+        Rx = Matrix4.rotation_x(rx)
+        Ry = Matrix4.rotation_y(ry)
+        Rz = Matrix4.rotation_z(rz)
+        
+        # XYZ欧拉角顺序：Rz * Ry * Rx
+        return Rz * Ry * Rx
+    
     def inverse(self) -> 'Matrix4':
         """矩阵求逆"""
         try:

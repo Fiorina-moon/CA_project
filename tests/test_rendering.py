@@ -79,10 +79,10 @@ def test_renderer_static():
     
     # 计算合适的距离
     size = max(max_pos.x - min_pos.x, max_pos.y - min_pos.y, max_pos.z - min_pos.z)
-    renderer.camera.distance = size * 2.0
+    renderer.camera.distance = size * 2.2
     
-    renderer.camera.elevation = 25
-    renderer.camera.azimuth = 45
+    renderer.camera.elevation = 15
+    renderer.camera.azimuth = 135
     
     print(f"\n相机设置:")
     print(f"  目标: {renderer.camera.target}")

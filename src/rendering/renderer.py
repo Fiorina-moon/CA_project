@@ -1,5 +1,5 @@
 """
-OpenGL渲染器 - 修复版（支持变形法线）
+OpenGL渲染器 
 """
 import numpy as np
 from typing import List
@@ -39,6 +39,7 @@ class Renderer:
         self.show_wireframe = False
         self.show_skeleton = True
         self.background_color = (0.2, 0.2, 0.2, 1.0)
+        self.render_mode = 'solid'  # 'solid', 'wireframe', 'transparent', 'wireframe_transparent'
         
         # 法线缓存
         self._deformed_normals = None
@@ -76,7 +77,6 @@ class Renderer:
         return True
     
     def render_frame(self, mesh: Mesh, deformer: SkinDeformer = None, skeleton: Skeleton = None):
-        """渲染一帧"""
         glClearColor(*self.background_color)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
@@ -92,21 +92,24 @@ class Renderer:
         pos = self.camera.get_position()
         target = self.camera.target
         gluLookAt(pos.x, pos.y, pos.z,
-                  target.x, target.y, target.z,
-                  0, 0, 1)
+                target.x, target.y, target.z,
+                0, 0, 1)
         
-        # 渲染网格
+        # 🔧 统一旋转整个场景（在这里应用一次就够了）
+        glRotatef(90, 1, 0, 0)  # 让模型站起来
+        
+        # 渲染网格（会继承上面的旋转）
         if deformer:
             self._render_deformed_mesh(mesh, deformer)
         else:
             self._render_mesh(mesh)
         
-        # 渲染骨架
+        # 渲染骨架（也会继承旋转）
         if self.show_skeleton and skeleton:
             self._render_skeleton(skeleton)
         
         glfw.swap_buffers(self.window)
-    
+
     def _render_mesh(self, mesh: Mesh):
         """渲染网格（原始）"""
         glColor3f(0.8, 0.8, 0.8)
@@ -132,37 +135,97 @@ class Renderer:
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     
     def _render_deformed_mesh(self, mesh: Mesh, deformer: SkinDeformer):
-        """渲染变形后的网格（正确计算法线）"""
+        """渲染变形后的网格（支持多种渲染模式）"""
         # 获取变形后的顶点
         vertices = deformer.get_deformed_vertices()
         
         # 重新计算法线
         normals = self._compute_normals(mesh, vertices)
         
-        glColor3f(0.8, 0.6, 0.4)
-        
-        if self.show_wireframe:
+        # 根据渲染模式设置
+        if self.render_mode == 'wireframe':
+            # 纯线框
+            glDisable(GL_LIGHTING)
+            glColor3f(0.0, 1.0, 0.0)  # 绿色线框
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-        else:
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-        
-        glBegin(GL_TRIANGLES)
-        for face in mesh.faces:
-            # 计算面法线（用于平滑着色可以用顶点法线）
-            v0 = vertices[face.vertex_indices[0]]
-            v1 = vertices[face.vertex_indices[1]]
-            v2 = vertices[face.vertex_indices[2]]
+            glLineWidth(1.5)
             
-            # 使用预计算的顶点法线
-            for i, idx in enumerate(face.vertex_indices):
-                v = vertices[idx]
-                n = normals[idx]
-                
-                glNormal3f(n.x, n.y, n.z)
-                glVertex3f(v.x, v.y, v.z)
-        glEnd()
-        
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            glBegin(GL_TRIANGLES)
+            for face in mesh.faces:
+                for i, idx in enumerate(face.vertex_indices):
+                    v = vertices[idx]
+                    n = normals[idx]
+                    glNormal3f(n.x, n.y, n.z)
+                    glVertex3f(v.x, v.y, v.z)
+            glEnd()
+            
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            glEnable(GL_LIGHTING)
+            
+        elif self.render_mode == 'transparent':
+            # 半透明实体
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glColor4f(0.8, 0.6, 0.4, 0.4)  # 40%透明度
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            
+            glBegin(GL_TRIANGLES)
+            for face in mesh.faces:
+                for i, idx in enumerate(face.vertex_indices):
+                    v = vertices[idx]
+                    n = normals[idx]
+                    glNormal3f(n.x, n.y, n.z)
+                    glVertex3f(v.x, v.y, v.z)
+            glEnd()
+            
+            glDisable(GL_BLEND)
+            
+        elif self.render_mode == 'wireframe_transparent':
+            # 先画半透明面
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glColor4f(0.8, 0.6, 0.4, 0.25)  # 25%透明度
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            
+            glBegin(GL_TRIANGLES)
+            for face in mesh.faces:
+                for i, idx in enumerate(face.vertex_indices):
+                    v = vertices[idx]
+                    n = normals[idx]
+                    glNormal3f(n.x, n.y, n.z)
+                    glVertex3f(v.x, v.y, v.z)
+            glEnd()
+            
+            glDisable(GL_BLEND)
+            
+            # 再画线框
+            glDisable(GL_LIGHTING)
+            glColor3f(0.0, 0.0, 0.0)  # 黑色线框
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+            glLineWidth(1.0)
+            
+            glBegin(GL_TRIANGLES)
+            for face in mesh.faces:
+                for i, idx in enumerate(face.vertex_indices):
+                    v = vertices[idx]
+                    glVertex3f(v.x, v.y, v.z)
+            glEnd()
+            
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            glEnable(GL_LIGHTING)
+            
+        else:  # 'solid'
+            glColor3f(0.8, 0.6, 0.4)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+            
+            glBegin(GL_TRIANGLES)
+            for face in mesh.faces:
+                for i, idx in enumerate(face.vertex_indices):
+                    v = vertices[idx]
+                    n = normals[idx]
+                    glNormal3f(n.x, n.y, n.z)
+                    glVertex3f(v.x, v.y, v.z)
+            glEnd()
     
     def _compute_normals(self, mesh: Mesh, vertices: List[Vector3]) -> List[Vector3]:
         """
@@ -204,8 +267,16 @@ class Renderer:
         return normals
     
     def _render_skeleton(self, skeleton: Skeleton):
-        """渲染骨架 - 使用简化的当前位置"""
+        """渲染骨架 - 与模型保持一致的坐标系"""
         glDisable(GL_LIGHTING)
+        
+        # 🔧 保存当前矩阵状态
+        glPushMatrix()
+        
+        # 🔧 应用与模型相同的旋转（如果你在 render_frame 里有 glRotatef）
+        # 注意：这里不需要再次旋转，因为已经在 render_frame 里统一旋转了
+        # 如果你之前在 render_frame 的第96行有 glRotatef(-90, 1, 0, 0)
+        # 那么骨架会自动跟着旋转
         
         # 绘制骨骼
         glColor3f(0.0, 0.8, 1.0)
@@ -213,7 +284,6 @@ class Renderer:
         
         glBegin(GL_LINES)
         for bone in skeleton.bones:
-            # 使用当前位置
             start = bone.start_joint.current_position
             end = bone.end_joint.current_position
             
@@ -231,7 +301,10 @@ class Renderer:
             glVertex3f(pos.x, pos.y, pos.z)
         glEnd()
         
+        glPopMatrix()  # 🔧 恢复矩阵状态
+        
         glEnable(GL_LIGHTING)
+
     
     def should_close(self) -> bool:
         """检查窗口是否应该关闭"""

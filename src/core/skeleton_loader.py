@@ -28,11 +28,10 @@ class SkeletonLoader:
         
         # 加载关节
         for joint_data in data['joints']:
-            # 直接加载
             head = Vector3.from_array(joint_data['head'])
             tail = Vector3.from_array(joint_data['tail'])
             
-            # 🔧 立即旋转坐标：(x, y, z) -> (x, z, -y)
+            # 🔧 重新启用坐标转换：(x, y, z) -> (x, z, -y)
             head_rotated = Vector3(head.x, head.z, -head.y)
             tail_rotated = Vector3(tail.x, tail.z, -tail.y)
             
@@ -44,6 +43,7 @@ class SkeletonLoader:
                 parent=joint_data.get('parent')
             )
             skeleton.add_joint(joint)
+
         
         # 构建层级关系
         skeleton.build_hierarchy()
