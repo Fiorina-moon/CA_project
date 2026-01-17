@@ -39,7 +39,7 @@ class Renderer:
         self.show_wireframe = False
         self.show_skeleton = True
         self.background_color = (0.2, 0.2, 0.2, 1.0)
-        self.render_mode = 'solid'  # 'solid', 'wireframe', 'transparent', 'wireframe_transparent'
+        self.render_mode = 'transparent'  # 'solid', 'wireframe', 'transparent', 'wireframe_transparent'
         
         # 法线缓存
         self._deformed_normals = None
@@ -133,40 +133,23 @@ class Renderer:
         glEnd()
         
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-    
+        
     def _render_deformed_mesh(self, mesh: Mesh, deformer: SkinDeformer):
-        """渲染变形后的网格（支持多种渲染模式）"""
+        """渲染变形后的网格
+        
+        渲染模式:
+            - 'transparent_wireframe': 半透明面 + 黑色线框（默认）
+            - 'solid': 灰色实体
+        """
         # 获取变形后的顶点
         vertices = deformer.get_deformed_vertices()
         
         # 重新计算法线
         normals = self._compute_normals(mesh, vertices)
         
-        # 根据渲染模式设置
-        if self.render_mode == 'wireframe':
-            # 纯线框
-            glDisable(GL_LIGHTING)
-            glColor3f(0.0, 1.0, 0.0)  # 绿色线框
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
-            glLineWidth(1.5)
-            
-            glBegin(GL_TRIANGLES)
-            for face in mesh.faces:
-                for i, idx in enumerate(face.vertex_indices):
-                    v = vertices[idx]
-                    n = normals[idx]
-                    glNormal3f(n.x, n.y, n.z)
-                    glVertex3f(v.x, v.y, v.z)
-            glEnd()
-            
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-            glEnable(GL_LIGHTING)
-            
-        elif self.render_mode == 'transparent':
-            # 半透明实体
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glColor4f(0.8, 0.6, 0.4, 0.4)  # 40%透明度
+        if self.render_mode == 'solid':
+            # 模式2: 灰色实体
+            glColor3f(0.7, 0.7, 0.7)
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
             
             glBegin(GL_TRIANGLES)
@@ -178,13 +161,13 @@ class Renderer:
                     glVertex3f(v.x, v.y, v.z)
             glEnd()
             
-            glDisable(GL_BLEND)
+        else:  # 'transparent_wireframe' 或默认
+            # 模式1: 半透明面 + 黑色线框
             
-        elif self.render_mode == 'wireframe_transparent':
             # 先画半透明面
             glEnable(GL_BLEND)
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glColor4f(0.8, 0.6, 0.4, 0.25)  # 25%透明度
+            glColor3f(0.8, 0.8, 0.8)  # 浅灰色，30%透明度
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
             
             glBegin(GL_TRIANGLES)
@@ -198,9 +181,9 @@ class Renderer:
             
             glDisable(GL_BLEND)
             
-            # 再画线框
+            # 再画黑色线框
             glDisable(GL_LIGHTING)
-            glColor3f(0.0, 0.0, 0.0)  # 黑色线框
+            glColor3f(0.0, 0.0, 0.0)  # 黑色
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
             glLineWidth(1.0)
             
@@ -213,19 +196,7 @@ class Renderer:
             
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
             glEnable(GL_LIGHTING)
-            
-        else:  # 'solid'
-            glColor3f(0.8, 0.6, 0.4)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-            
-            glBegin(GL_TRIANGLES)
-            for face in mesh.faces:
-                for i, idx in enumerate(face.vertex_indices):
-                    v = vertices[idx]
-                    n = normals[idx]
-                    glNormal3f(n.x, n.y, n.z)
-                    glVertex3f(v.x, v.y, v.z)
-            glEnd()
+
     
     def _compute_normals(self, mesh: Mesh, vertices: List[Vector3]) -> List[Vector3]:
         """

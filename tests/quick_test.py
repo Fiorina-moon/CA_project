@@ -174,7 +174,7 @@ if __name__ == "__main__":
     
     # 解析参数
     view_angle = 90
-    render_mode = 'solid'
+    render_mode = 'transparent'
     fps = 30
     duration = 0
     
