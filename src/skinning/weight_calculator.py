@@ -1,21 +1,16 @@
 """
-权重计算器 v11 - 修复鹿角误绑前腿问题
+权重计算器 v15 - 限制前腿影响区域
+核心思想：前腿骨骼只能影响身体下半部分和前方的顶点
 """
 import numpy as np
-from typing import List, Dict
+from typing import List, Dict, Set
 from core.mesh import Mesh
 from core.skeleton import Skeleton
 from utils.math_utils import Vector3
 from utils.geometry import point_to_segment_distance
 
 
-class WeightCalculatorV11:
-    """
-    关键修复：
-    1. 鹿角识别：增加排除前腿区域的逻辑
-    2. 鹿角识别：扩大识别范围，使用更宽松的条件
-    3. 前腿：修复肩部混合区域判断
-    """
+class WeightCalculatorV15:
     
     def __init__(self, max_influences: int = 4, epsilon: float = 1e-6):
         self.max_influences = max_influences
@@ -35,18 +30,24 @@ class WeightCalculatorV11:
             'ankle_FL': ['riglflegankle'],
             'ankle_FR': ['rigrflegankle'],
         }
-    
+   
     def compute_weights(self, mesh: Mesh, skeleton: Skeleton) -> np.ndarray:
-        """计算蒙皮权重"""
         num_vertices = mesh.get_vertex_count()
         num_bones = skeleton.get_bone_count()
         
-        print(f"\n计算蒙皮权重 (v11 - 修复鹿角误绑)...")
+        print(f"\n计算蒙皮权重 (v15 - 限制前腿影响区域)...")
         print(f"  顶点数: {num_vertices}")
         print(f"  骨骼数: {num_bones}")
         
         bone_regions = self._classify_bones(skeleton)
         key_bones = self._get_key_bones(skeleton, bone_regions)
+        head_bone_chain = self._build_head_bone_chain(skeleton, bone_regions)
+        
+        # 获取需要排除的骨骼（腿部+脊柱+尾巴）
+        excluded_bones = self._get_excluded_bones(bone_regions)
+        
+        print(f"  头部骨骼链: {[skeleton.bones[i].name for i in head_bone_chain]}")
+        print(f"  排除骨骼: {[skeleton.bones[i].name for i in excluded_bones]}")
         
         bbox_min, bbox_max = mesh.get_bounding_box()
         model_info = {
@@ -57,215 +58,194 @@ class WeightCalculatorV11:
             'length': bbox_max.y - bbox_min.y,
         }
         
-        print(f"\n  模型尺寸: 高(Z)={model_info['height']:.3f}, 宽(X)={model_info['width']:.3f}, 长(Y)={model_info['length']:.3f}")
-        
-        if key_bones['head_pos']:
-            print(f"  头部位置: X={key_bones['head_pos'].x:.3f}, Y={key_bones['head_pos'].y:.3f}, Z={key_bones['head_pos'].z:.3f}")
-        
-        # 🔧 获取前腿骨骼位置（用于排除）
-        fleg_positions = self._get_front_leg_positions(skeleton, bone_regions)
+        # 🔧 计算头部区域边界（替代原来的前腿边界）
+        head_bounds = self._compute_head_bounds(skeleton, bone_regions, model_info)
+        print(f"  头部区域: Y > {head_bounds['min_y']:.3f}, Z > {head_bounds['min_z']:.3f}")
         
         weights = np.zeros((num_vertices, num_bones), dtype=np.float32)
-        stats = {'antler': 0, 'ankle': 0, 'shoulder': 0, 'normal': 0}
+        stats = {'head_region': 0, 'ankle': 0, 'shoulder': 0, 'normal': 0}
         
         for i, vertex in enumerate(mesh.vertices):
             if (i + 1) % 2000 == 0:
                 print(f"  进度: {i + 1}/{num_vertices}")
             
-            # 🔧 增强版鹿角判断
-            if self._is_antler_enhanced(vertex, key_bones, model_info, fleg_positions):
-                if key_bones['head_idx'] is not None:
-                    weights[i, key_bones['head_idx']] = 1.0
-                    stats['antler'] += 1
-                    if stats['antler'] <= 15:
-                        print(f"    [鹿角] 顶点{i}: X={vertex.x:.3f}, Y={vertex.y:.3f}, Z={vertex.z:.3f}")
-                    continue
+            # 🔧 判断该顶点是否在头部区域内
+            in_head_region = self._is_in_head_region(vertex, head_bounds)
             
-            # 脚踝
+            # 脚踝检测
             ankle_result = self._check_ankle_strict(vertex, key_bones, model_info)
             if ankle_result is not None:
                 weights[i, ankle_result] = 1.0
                 stats['ankle'] += 1
                 continue
             
-            # 🔧 修复前腿肩部混合
+            # 肩部检测
             if self._is_shoulder_enhanced(vertex, key_bones, model_info):
                 self._compute_shoulder_weight(i, vertex, weights, skeleton, bone_regions)
                 stats['shoulder'] += 1
                 continue
             
-            # 普通顶点
-            stats['normal'] += 1
-            self._compute_normal_weight(i, vertex, weights, skeleton, bone_regions, key_bones)
+            # 🔧 如果顶点在头部区域内，只使用头部和颈部骨骼
+            if in_head_region:
+                self._compute_weight_excluding_bones(
+                    i, vertex, weights, skeleton, bone_regions, 
+                    head_bone_chain, excluded_bones
+                )
+                stats['head_region'] += 1
+            else:
+                # 非头部区域：正常计算
+                stats['normal'] += 1
+                self._compute_normal_weight(i, vertex, weights, skeleton, bone_regions)
         
-        print(f"\n  顶点分类统计:")
-        print(f"    🦌 鹿角顶点: {stats['antler']}")
-        print(f"    🦶 脚踝顶点: {stats['ankle']}")
-        print(f"    💪 肩部顶点: {stats['shoulder']}")
-        print(f"    📍 普通顶点: {stats['normal']}")
+        print(f"\n  统计: 头部区域={stats['head_region']}, 脚踝={stats['ankle']}, 肩部={stats['shoulder']}, 正常={stats['normal']}")
         
         self._validate_weights(weights, skeleton)
-        
         return weights
-    
-    def _get_front_leg_positions(self, skeleton: Skeleton, bone_regions: Dict) -> List:
-        """获取前腿骨骼的位置范围（用于排除鹿角误判）"""
-        fleg_positions = []
+
+
+    def _compute_head_bounds(self, skeleton: Skeleton, bone_regions: Dict[int, str], 
+                            model_info: Dict) -> Dict:
+        """
+        计算头部区域的边界
+        只有在这个区域内的顶点才排除非头部骨骼
+        """
+        head_min_y = float('inf')
+        head_max_y = float('-inf')
+        head_min_z = float('inf')
+        head_max_z = float('-inf')
         
+        # 找到头部和颈部骨骼的位置范围
         for bone_idx, region in bone_regions.items():
-            if region in ['front_leg_L', 'front_leg_R']:
+            if region in ['head', 'neck']:
                 bone = skeleton.bones[bone_idx]
-                fleg_positions.append({
-                    'start': bone.start_joint.head,
-                    'end': bone.end_joint.head,
-                    'name': bone.name
-                })
+                head_min_y = min(head_min_y, bone.start_joint.head.y, bone.end_joint.head.y)
+                head_max_y = max(head_max_y, bone.start_joint.head.y, bone.end_joint.head.y)
+                head_min_z = min(head_min_z, bone.start_joint.head.z, bone.end_joint.head.z)
+                head_max_z = max(head_max_z, bone.start_joint.head.z, bone.end_joint.head.z)
         
-        return fleg_positions
-    
-    def _is_antler_enhanced(self, vertex: Vector3, key_bones: Dict, model_info: Dict, fleg_positions: List) -> bool:
+        # 头部区域边界
+        bounds = {
+            # Y 方向：从颈部开始往前（头部方向）
+            'min_y': head_min_y - model_info['length'] * 0.05,  # 稍微往后延伸一点
+            # Z 方向：从颈部高度开始
+            'min_z': head_min_z - model_info['height'] * 0.05,  # 颈部底部
+        }
+        
+        return bounds
+
+
+    def _is_in_head_region(self, vertex: Vector3, head_bounds: Dict) -> bool:
         """
-        🔧 增强版鹿角判断：
-        1. 使用更宽松的Z高度条件
-        2. 明确排除前腿区域
-        3. 增加对称性检查
+        判断顶点是否在头部区域
+        必须同时满足：
+        1. Y 坐标足够靠前（在颈部前方）
+        2. Z 坐标足够高（在颈部高度以上）
         """
-        if key_bones['head_pos'] is None:
+        # 必须在颈部前方
+        if vertex.y < head_bounds['min_y']:
             return False
         
-        head = key_bones['head_pos']
-        
-        # === 基础条件 ===
-        dx = abs(vertex.x - head.x)
-        dy = vertex.y - head.y
-        dz = vertex.z - head.z
-        
-        # 1. Z高度：必须高于头部（鹿角在头上方）
-        if dz < -0.02:  # 允许略低于头部2cm（考虑头部建模误差）
+        # 必须在颈部高度以上
+        if vertex.z < head_bounds['min_z']:
             return False
         
-        # 2. 🔧 排除前腿区域（关键修复！）
-        # 前腿在身体前方且较低，如果顶点接近前腿，则不是鹿角
-        for fleg in fleg_positions:
-            fleg_y = fleg['start'].y
-            fleg_z = fleg['start'].z
-            
-            # 前腿通常在 Y < -0.1（身体前方）且 Z < 1.2（较低位置）
-            if vertex.y < -0.05 and vertex.z < 1.3:  # 可能接近前腿
-                dist_to_fleg = np.sqrt(
-                    (vertex.x - fleg['start'].x)**2 +
-                    (vertex.y - fleg['start'].y)**2 +
-                    (vertex.z - fleg['start'].z)**2
-                )
-                if dist_to_fleg < 0.25:  # 距离前腿太近
-                    return False
-        
-        # 3. 鹿角特征范围（放宽条件）
-        antler_z_min = -0.02  # 允许略低于头部
-        antler_z_max = 0.80   # 增大最大高度
-        antler_y_min = -0.35  # 扩大后方范围
-        antler_y_max = 0.12   # 扩大前方范围
-        antler_x_max = 0.50   # 增大横向范围
-        
-        # 横向距离随高度增加（鹿角向外展开）
-        if dz > 0:
-            max_x_at_height = 0.10 + dz * 2.0  # 更陡峭的展开曲线
-        else:
-            max_x_at_height = 0.15  # 头部附近的基础宽度
-        
-        is_in_antler_box = (
-            antler_z_min < dz < antler_z_max and
-            antler_y_min < dy < antler_y_max and
-            dx < min(antler_x_max, max_x_at_height)
-        )
-        
-        # 4. 额外验证：检查是否明显偏向前腿方向
-        if is_in_antler_box:
-            # 如果顶点Y坐标远小于头部（说明在头部前方很远），且Z不够高，可能是前腿
-            if dy < -0.15 and dz < 0.15:
-                return False
-        
-        return is_in_antler_box
+        return True
+
     
-    def _is_shoulder_enhanced(self, vertex: Vector3, key_bones: Dict, model_info: Dict) -> bool:
-        """
-        🔧 增强版肩部判断
-        """
-        if key_bones['chest_pos'] is None:
-            return False
+    def _compute_front_leg_bounds(self, skeleton: Skeleton, front_leg_bones: Set[int], 
+                                   model_info: Dict) -> Dict:
+        """计算前腿骨骼的影响边界"""
+        max_z = model_info['min'].z
+        min_y = float('inf')
+        max_y = float('-inf')
         
-        chest = key_bones['chest_pos']
+        for bone_idx in front_leg_bones:
+            bone = skeleton.bones[bone_idx]
+            max_z = max(max_z, bone.start_joint.head.z, bone.end_joint.head.z)
+            min_y = min(min_y, bone.start_joint.head.y, bone.end_joint.head.y)
+            max_y = max(max_y, bone.start_joint.head.y, bone.end_joint.head.y)
         
-        dx = abs(vertex.x - chest.x)
-        dy = vertex.y - chest.y
-        dz = vertex.z - chest.z
+        bounds = {
+            'max_z': max_z + model_info['height'] * 0.09,
+            'min_y': min_y - model_info['length'] * 0.08,
+            'max_y': max_y + model_info['length'] * 0.04,
+        }
         
-        # 🔧 修复：调整肩部识别范围
-        is_shoulder = (
-            -0.25 < dy < 0.25 and   # 扩大前后范围
-            0.03 < dx < 0.35 and    # 扩大横向范围
-            -0.15 < dz < 0.30       # 扩大高度范围
-        )
-        
-        return is_shoulder
+        return bounds
     
-    def _check_ankle_strict(self, vertex: Vector3, key_bones: Dict, model_info: Dict) -> int:
-        """脚踝检测"""
-        height = model_info['height']
-        ankle_radius = height * 0.04
+    def _is_outside_front_leg_zone(self, vertex: Vector3, front_leg_bounds: Dict) -> bool:
+        """判断顶点是否在排除区域之外"""
+        if vertex.z > front_leg_bounds['max_z']:
+            return True
+        if vertex.y > front_leg_bounds['max_y']:
+            return True
+        return False
+    
+    def _get_front_leg_bones_only(self, bone_regions: Dict[int, str]) -> Set[int]:
+        """仅获取前腿骨骼（用于计算边界）"""
+        front_leg_bones = set()
+        for bone_idx, region in bone_regions.items():
+            if region in ['front_leg_L', 'front_leg_R', 'ankle_FL', 'ankle_FR']:
+                front_leg_bones.add(bone_idx)
+        return front_leg_bones
+    
+    def _get_excluded_bones(self, bone_regions: Dict[int, str]) -> Set[int]:
+        """
+        获取在头部区域需要排除的骨骼
+        排除：前腿、后腿、脊柱、尾巴
+        保留：头、颈（这样鹿角才能绑定到头部）
+        """
+        excluded_bones = set()
+        for bone_idx, region in bone_regions.items():
+            if region in ['front_leg_L', 'front_leg_R', 'ankle_FL', 'ankle_FR',
+                          'back_leg_L', 'back_leg_R', 'ankle_BL', 'ankle_BR',
+                          'spine', 'tail']:
+                excluded_bones.add(bone_idx)
+        return excluded_bones
+    
+    def _compute_weight_excluding_bones(self, vertex_idx: int, vertex: Vector3,
+                                         weights: np.ndarray, skeleton: Skeleton,
+                                         bone_regions: Dict, head_bone_chain: Set[int],
+                                         excluded_bones: Set[int]):
+        """计算权重时排除指定骨骼"""
+        distances = []
         
-        closest_ankle = None
-        closest_dist = float('inf')
-        
-        for region, (bone_idx, ankle_pos) in key_bones['ankles'].items():
-            is_left = 'L' in region
-            is_left_vertex = vertex.x > 0
-            
-            if is_left != is_left_vertex:
+        for bone_idx, bone in enumerate(skeleton.bones):
+            # 跳过排除的骨骼
+            if bone_idx in excluded_bones:
                 continue
             
-            dx = vertex.x - ankle_pos.x
-            dy = vertex.y - ankle_pos.y
-            dz = vertex.z - ankle_pos.z
-            dist = np.sqrt(dx*dx + dy*dy + dz*dz)
-            
-            if vertex.z < ankle_pos.z + height * 0.02 and dist < ankle_radius:
-                if dist < closest_dist:
-                    closest_dist = dist
-                    closest_ankle = bone_idx
+            dist = point_to_segment_distance(vertex, bone.start_joint.head, bone.end_joint.head)
+            distances.append((bone_idx, dist))
         
-        return closest_ankle
-    
-    def _compute_shoulder_weight(self, vertex_idx, vertex, weights, skeleton, bone_regions):
-        """肩部混合权重"""
-        shoulder_bones = []
-        
-        for bone_idx, region in bone_regions.items():
-            if region in ['spine', 'front_leg_L', 'front_leg_R', 'neck']:  # 添加neck
-                bone = skeleton.bones[bone_idx]
+        # 如果没有可用骨骼，fallback 到所有骨骼
+        if not distances:
+            for bone_idx, bone in enumerate(skeleton.bones):
                 dist = point_to_segment_distance(vertex, bone.start_joint.head, bone.end_joint.head)
-                shoulder_bones.append((bone_idx, dist))
+                distances.append((bone_idx, dist))
         
-        if not shoulder_bones:
+        distances.sort(key=lambda x: x[1])
+        top_bones = distances[:self.max_influences]
+        
+        if not top_bones:
             return
-        
-        shoulder_bones.sort(key=lambda x: x[1])
-        top_bones = shoulder_bones[:self.max_influences]
         
         total = 0.0
         bone_weights = []
-        min_d = top_bones[0][1]
+        min_d = max(top_bones[0][1], 0.001)
         
         for bone_idx, dist in top_bones:
-            w = 1.0 / ((dist / (min_d + 0.001)) ** 1.5 + 0.01)
+            w = 1.0 / ((dist / min_d) ** 2 + 0.01)
             bone_weights.append((bone_idx, w))
             total += w
         
         if total > self.epsilon:
             for bone_idx, w in bone_weights:
                 weights[vertex_idx, bone_idx] = w / total
-    
-    def _compute_normal_weight(self, vertex_idx, vertex, weights, skeleton, bone_regions, key_bones):
+        else:
+            weights[vertex_idx, top_bones[0][0]] = 1.0
+
+    def _compute_normal_weight(self, vertex_idx, vertex, weights, skeleton, bone_regions):
         """普通顶点权重"""
         min_dist = float('inf')
         nearest_bone = 0
@@ -292,9 +272,9 @@ class WeightCalculatorV11:
         bone_weights = []
         
         if top_bones:
-            min_d = top_bones[0][1]
+            min_d = max(top_bones[0][1], 0.001)
             for bone_idx, dist in top_bones:
-                w = 1.0 / ((dist / (min_d + 0.001)) ** 2 + 0.01)
+                w = 1.0 / ((dist / min_d) ** 2 + 0.01)
                 bone_weights.append((bone_idx, w))
                 total += w
         
@@ -306,10 +286,126 @@ class WeightCalculatorV11:
         else:
             weights[vertex_idx, nearest_bone] = 1.0
     
-    def _classify_bones(self, skeleton: Skeleton) -> Dict[int, str]:
-        """骨骼分类"""
-        bone_regions = {}
+    # ===== 辅助方法 =====
+    
+    def _build_head_bone_chain(self, skeleton: Skeleton, bone_regions: Dict[int, str]) -> Set[int]:
+        head_chain = set()
+        for bone_idx, region in bone_regions.items():
+            if region in ['head', 'neck']:
+                head_chain.add(bone_idx)
+        return head_chain
+    
+    def _compute_head_bounds(self, skeleton: Skeleton, bone_regions: Dict[int, str], 
+                            model_info: Dict) -> Dict:
+        """
+        计算头部区域的边界
+        只有在这个区域内的顶点才排除非头部骨骼
+        """
+        head_min_y = float('inf')
+        head_max_y = float('-inf')
+        head_min_z = float('inf')
+        head_max_z = float('-inf')
         
+        # 找到头部和颈部骨骼的位置范围
+        for bone_idx, region in bone_regions.items():
+            if region in ['head', 'neck']:
+                bone = skeleton.bones[bone_idx]
+                head_min_y = min(head_min_y, bone.start_joint.head.y, bone.end_joint.head.y)
+                head_max_y = max(head_max_y, bone.start_joint.head.y, bone.end_joint.head.y)
+                head_min_z = min(head_min_z, bone.start_joint.head.z, bone.end_joint.head.z)
+                head_max_z = max(head_max_z, bone.start_joint.head.z, bone.end_joint.head.z)
+        
+        # 头部区域边界
+        bounds = {
+            # Y 方向：从颈部开始往前（头部方向）
+            'min_y': head_min_y - model_info['length'] * 0.05,  # 稍微往后延伸一点
+            # Z 方向：从颈部高度开始
+            'min_z': head_min_z - model_info['height'] * 0.05,  # 颈部底部
+        }
+        
+        return bounds
+
+
+    def _is_in_head_region(self, vertex: Vector3, head_bounds: Dict) -> bool:
+        """
+        判断顶点是否在头部区域
+        必须同时满足：
+        1. Y 坐标足够靠前（在颈部前方）
+        2. Z 坐标足够高（在颈部高度以上）
+        """
+        # 必须在颈部前方
+        if vertex.y < head_bounds['min_y']:
+            return False
+        
+        # 必须在颈部高度以上
+        if vertex.z < head_bounds['min_z']:
+            return False
+        
+        return True
+
+        
+    def _is_shoulder_enhanced(self, vertex: Vector3, key_bones: Dict, model_info: Dict) -> bool:
+        if key_bones['chest_pos'] is None:
+            return False
+        chest = key_bones['chest_pos']
+        dx = abs(vertex.x - chest.x)
+        dy = vertex.y - chest.y
+        dz = vertex.z - chest.z
+        return (-0.25 < dy < 0.25 and 0.03 < dx < 0.35 and -0.15 < dz < 0.30)
+    
+    def _check_ankle_strict(self, vertex: Vector3, key_bones: Dict, model_info: Dict) -> int:
+        height = model_info['height']
+        ankle_radius = height * 0.04
+        closest_ankle = None
+        closest_dist = float('inf')
+        
+        for region, (bone_idx, ankle_pos) in key_bones['ankles'].items():
+            is_left = 'L' in region
+            is_left_vertex = vertex.x > 0
+            if is_left != is_left_vertex:
+                continue
+            
+            dx = vertex.x - ankle_pos.x
+            dy = vertex.y - ankle_pos.y
+            dz = vertex.z - ankle_pos.z
+            dist = np.sqrt(dx*dx + dy*dy + dz*dz)
+            
+            if vertex.z < ankle_pos.z + height * 0.02 and dist < ankle_radius:
+                if dist < closest_dist:
+                    closest_dist = dist
+                    closest_ankle = bone_idx
+        
+        return closest_ankle
+    
+    def _compute_shoulder_weight(self, vertex_idx, vertex, weights, skeleton, bone_regions):
+        shoulder_bones = []
+        for bone_idx, region in bone_regions.items():
+            if region in ['spine', 'front_leg_L', 'front_leg_R', 'neck']:
+                bone = skeleton.bones[bone_idx]
+                dist = point_to_segment_distance(vertex, bone.start_joint.head, bone.end_joint.head)
+                shoulder_bones.append((bone_idx, dist))
+        
+        if not shoulder_bones:
+            return
+        
+        shoulder_bones.sort(key=lambda x: x[1])
+        top_bones = shoulder_bones[:self.max_influences]
+        
+        total = 0.0
+        bone_weights = []
+        min_d = max(top_bones[0][1], 0.001)
+        
+        for bone_idx, dist in top_bones:
+            w = 1.0 / ((dist / min_d) ** 1.5 + 0.01)
+            bone_weights.append((bone_idx, w))
+            total += w
+        
+        if total > self.epsilon:
+            for bone_idx, w in bone_weights:
+                weights[vertex_idx, bone_idx] = w / total
+    
+    def _classify_bones(self, skeleton: Skeleton) -> Dict[int, str]:
+        bone_regions = {}
         for bone_idx, bone in enumerate(skeleton.bones):
             bone_name = bone.name.lower().replace('_', '').replace('-', '').replace('to', '')
             assigned = 'spine'
@@ -330,17 +426,13 @@ class WeightCalculatorV11:
                     break
             
             bone_regions[bone_idx] = assigned
-        
         return bone_regions
     
     def _get_key_bones(self, skeleton: Skeleton, bone_regions: Dict[int, str]) -> Dict:
-        """获取关键骨骼"""
         key_bones = {
-            'head_idx': None,
-            'head_pos': None,
+            'head_idx': None, 'head_pos': None,
             'ankles': {},
-            'chest_idx': None,
-            'chest_pos': None
+            'chest_idx': None, 'chest_pos': None
         }
         
         for bone_idx, region in bone_regions.items():
@@ -365,7 +457,6 @@ class WeightCalculatorV11:
         return key_bones
     
     def _get_allowed_bones(self, region, bone_regions, nearest) -> List[int]:
-        """获取允许的骨骼"""
         groups = {
             'head': {'head', 'neck'},
             'neck': {'head', 'neck', 'spine'},
@@ -380,17 +471,13 @@ class WeightCalculatorV11:
             'ankle_FL': {'ankle_FL', 'front_leg_L'},
             'ankle_FR': {'ankle_FR', 'front_leg_R'},
         }
-        
         allowed = groups.get(region, {region, 'spine'})
         bones = [idx for idx, r in bone_regions.items() if r in allowed]
-        
         return bones if bones else [nearest]
     
     def _validate_weights(self, weights, skeleton):
-        """验证权重"""
         row_sums = weights.sum(axis=1)
         invalid = np.abs(row_sums - 1.0) > 1e-4
-        
         if invalid.sum() > 0:
             for i in np.where(invalid)[0]:
                 s = row_sums[i]
@@ -398,9 +485,7 @@ class WeightCalculatorV11:
                     weights[i] /= s
                 else:
                     weights[i, 0] = 1.0
-        
         print(f"  ✓ 权重验证通过")
 
 
-# 兼容
-WeightCalculator = WeightCalculatorV11
+WeightCalculator = WeightCalculatorV15
