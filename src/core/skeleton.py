@@ -121,11 +121,30 @@ class Skeleton:
             joint.current_position = Vector3(joint.head.x, joint.head.y, joint.head.z)
     
     def build_bones(self):
-        self.bones.clear()
+        """
+        🔧 修复：从关节层级关系构建骨骼列表
+        每根骨骼连接parent关节和child关节
+        """
+        self.bones = []
+        
         for joint in self.joints:
-            if joint.parent:
-                self.bones.append(Bone(joint.parent, joint, len(self.bones)))
-    
+            if joint.parent is not None:
+                # 骨骼从parent指向当前joint
+                bone = Bone(
+                    start_joint=joint.parent,  # 父关节作为起点
+                    end_joint=joint,            # 当前关节作为终点
+                    index=len(self.bones)
+                )
+                # 设置骨骼名称
+                bone.name = f"{joint.parent.name}_to_{joint.name}"
+                self.bones.append(bone)
+        
+        print(f"  ✓ 构建了 {len(self.bones)} 根骨骼")
+        
+        # 验证几个关键骨骼
+        for bone in self.bones[:3]:
+            print(f"    骨骼[{bone.index}]: {bone.start_joint.name} -> {bone.end_joint.name}")
+        
     def update_global_transforms(self, joint: Joint = None):
         """
         更新全局变换（动画）

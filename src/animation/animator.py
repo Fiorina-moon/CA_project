@@ -65,6 +65,8 @@ class Animator:
         
         # 更新骨架姿态
         self._update_skeleton_pose()
+        
+        self.skeleton.update_global_transforms()
     
     def _update_skeleton_pose(self):
         """更新骨架姿态"""
