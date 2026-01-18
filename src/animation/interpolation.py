@@ -2,8 +2,8 @@
 插值算法
 """
 from typing import List
-from animation.keyframe import JointKeyframe  # 改为绝对导入
-from utils.math_utils import lerp  # 改为绝对导入
+from animation.keyframe import JointKeyframe 
+from utils.math_utils import lerp  
 
 
 def find_keyframe_interval(keyframes: List[JointKeyframe], time: float) -> tuple:

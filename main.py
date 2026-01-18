@@ -169,7 +169,7 @@ def parse_export_args(args):
     
     # 解析可选参数
     view_angle = 90
-    render_mode = 'transparent'
+    render_mode = 'transparent_with_wireframe'
     fps = 30
     duration = 0
     

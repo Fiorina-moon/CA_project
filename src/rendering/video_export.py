@@ -32,7 +32,7 @@ class VideoExporter:
         self.animations_dir = animations_dir
         
     def export(self, animation_name, output_path=None, 
-               view_angle=90, render_mode='transparent', 
+               view_angle=90, render_mode='transparent_with_wireframe', 
                fps=30, duration=0, width=800, height=600):
         """
         导出动画视频
