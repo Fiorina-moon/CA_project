@@ -4,16 +4,13 @@ CA Project - 骨骼动画系统主入口
 用法: python main.py <命令> [参数]
 
 命令:
-  test              运行交互式测试
   export <动画名>    导出动画视频
   compute           重新计算蒙皮权重
   list              列出所有可用动画
   help              显示帮助信息
 
 示例:
-  python main.py test
-  python main.py export walk_cycle
-  python main.py export elk_performance --angle 180 --fps 60
+  python main.py export  walk_cycle --angle 180 --fps 60
   python main.py compute
   python main.py compute --max-influences 6
   python main.py list
@@ -39,24 +36,6 @@ from src.rendering.video_export import VideoExporter
 def show_help():
     """显示帮助信息"""
     print(__doc__)
-
-
-def run_test():
-    """运行交互式测试"""
-    print("\n启动交互式测试...")
-    print("按 Ctrl+C 停止\n")
-    
-    try:
-        from tests.quick_test import export_animation_video as quick_test
-        # 直接运行原有的测试逻辑
-        quick_test("walk_cycle", view_angle=90, render_mode='transparent', fps=30, duration=0)
-    except ImportError:
-        print("错误: 找不到 tests/quick_test.py")
-        print("请确保文件存在")
-    except Exception as e:
-        print(f"测试运行失败: {e}")
-        import traceback
-        traceback.print_exc()
 
 
 def list_animations():
@@ -281,9 +260,6 @@ def main():
     
     if command in ['help', '-h', '--help']:
         show_help()
-    
-    elif command == 'test':
-        run_test()
     
     elif command == 'export':
         export_video_command(sys.argv[2:])

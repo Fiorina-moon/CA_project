@@ -1,13 +1,15 @@
 """
 帧导出器
+用于捕获渲染帧并导出为图片或视频
 """
 import numpy as np
 from pathlib import Path
 from PIL import Image
+
 try:
-    from OpenGL.GL import *
+    from OpenGL.GL import glReadPixels, GL_RGB, GL_UNSIGNED_BYTE
 except ImportError:
-    pass
+    print("⚠ OpenGL库未安装，帧捕获功能不可用")
 
 
 class FrameExporter:
@@ -15,6 +17,8 @@ class FrameExporter:
     
     def __init__(self, width: int, height: int):
         """
+        初始化帧导出器
+        
         Args:
             width: 帧宽度
             height: 帧高度
@@ -24,31 +28,35 @@ class FrameExporter:
     
     def capture_frame(self) -> np.ndarray:
         """
-        捕获当前帧
+        捕获当前OpenGL帧缓冲区的内容
         
         Returns:
-            RGB图像数组 (H × W × 3)
+            RGB图像数组，形状为 (height, width, 3)
         """
-        # 读取像素数据
+        # 读取OpenGL帧缓冲区
         pixels = glReadPixels(0, 0, self.width, self.height, GL_RGB, GL_UNSIGNED_BYTE)
         
         # 转换为numpy数组
         image = np.frombuffer(pixels, dtype=np.uint8)
         image = image.reshape(self.height, self.width, 3)
         
-        # 翻转（OpenGL坐标系）
+        # 翻转Y轴（OpenGL坐标系原点在左下角）
         image = np.flipud(image)
         
         return image
     
     def save_frame(self, image: np.ndarray, filepath: Path):
         """
-        保存帧到文件
+        保存图像到文件
         
         Args:
             image: RGB图像数组
             filepath: 保存路径
         """
+        # 确保目录存在
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        
+        # 保存图像
         img = Image.fromarray(image, 'RGB')
         img.save(filepath)
     
@@ -62,12 +70,19 @@ class FrameExporter:
             output_path: 输出视频路径
             fps: 帧率
         """
+        # 优先使用OpenCV
         try:
             import cv2
+            FrameExporter._create_video_opencv(frame_dir, output_path, fps)
         except ImportError:
+            # 备用方案：imageio
             print("⚠ OpenCV未安装，使用imageio")
             FrameExporter._create_video_imageio(frame_dir, output_path, fps)
-            return
+    
+    @staticmethod
+    def _create_video_opencv(frame_dir: Path, output_path: Path, fps: int):
+        """使用OpenCV创建视频"""
+        import cv2
         
         # 获取所有帧文件
         frames = sorted(frame_dir.glob("frame_*.png"))
@@ -89,6 +104,7 @@ class FrameExporter:
         print(f"  分辨率: {width}x{height}")
         print(f"  帧率: {fps} FPS")
         
+        # 写入所有帧
         for i, frame_path in enumerate(frames):
             if (i + 1) % 30 == 0:
                 print(f"  进度: {i + 1}/{len(frames)}")
@@ -100,14 +116,15 @@ class FrameExporter:
         print(f"✓ 视频创建完成: {output_path}")
     
     @staticmethod
-    def _create_video_imageio(frame_dir: Path, output_path: Path, fps: int = 30):
-        """使用imageio创建视频（备用方案）"""
+    def _create_video_imageio(frame_dir: Path, output_path: Path, fps: int):
+        """使用imageio创建视频"""
         try:
             import imageio
         except ImportError:
             print("✗ 请安装: pip install opencv-python 或 pip install imageio[ffmpeg]")
             return
         
+        # 获取所有帧文件
         frames = sorted(frame_dir.glob("frame_*.png"))
         if not frames:
             print("✗ 未找到帧文件")
@@ -116,9 +133,9 @@ class FrameExporter:
         print(f"\n使用imageio创建视频:")
         print(f"  帧数: {len(frames)}")
         
-        images = []
-        for frame_path in frames:
-            images.append(imageio.imread(str(frame_path)))
+        # 读取所有帧
+        images = [imageio.imread(str(frame_path)) for frame_path in frames]
         
+        # 写入视频
         imageio.mimsave(str(output_path), images, fps=fps)
         print(f"✓ 视频创建完成: {output_path}")
