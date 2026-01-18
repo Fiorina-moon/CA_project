@@ -71,6 +71,8 @@ class MainWindow(QMainWindow):
         self.control_panel.time_seek.connect(self._on_time_seek)
         self.control_panel.loop_toggled.connect(self._on_loop_toggled)
         self.control_panel.export_video_clicked.connect(self._on_export_video)
+        self.control_panel.render_mode_changed.connect(self._on_render_mode_changed)
+        self.control_panel.show_skeleton_toggled.connect(self._on_show_skeleton_toggled)
         splitter.addWidget(self.control_panel)
         
         # 设置分割比例
@@ -335,3 +337,22 @@ class MainWindow(QMainWindow):
             self.gl_widget
         )
         dialog.exec_()
+
+    def _on_render_mode_changed(self, mode_text):
+        """渲染模式改变"""
+        # 根据选择的模式更新 GL 视图
+        if mode_text == "半透明+线框":
+            self.gl_widget.show_mesh = True
+            self.gl_widget.wireframe_mode = False 
+        elif mode_text == "仅线框":
+            self.gl_widget.show_mesh = True
+            self.gl_widget.wireframe_mode = True
+        
+        self.gl_widget.update()
+        self.statusBar().showMessage(f"渲染模式: {mode_text}")
+
+    def _on_show_skeleton_toggled(self, checked):
+        """骨架显示切换"""
+        self.gl_widget.show_skeleton = checked
+        self.gl_widget.update()
+        self.statusBar().showMessage(f"骨架显示: {'开' if checked else '关'}")

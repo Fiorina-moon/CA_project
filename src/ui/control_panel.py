@@ -21,7 +21,9 @@ class ControlPanel(QWidget):
     time_seek = pyqtSignal(float)  # 时间轴拖动
     loop_toggled = pyqtSignal(bool)
     export_video_clicked = pyqtSignal()
-    
+    render_mode_changed = pyqtSignal(str)  # 🔧 新增：渲染模式改变
+    show_skeleton_toggled = pyqtSignal(bool)  # 🔧 新增：骨架显示切换
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.skeleton = None
@@ -40,7 +42,7 @@ class ControlPanel(QWidget):
         self.loop_checkbox = None
         
         self._init_ui()
-    
+
     def _init_ui(self):
         """初始化UI"""
         layout = QVBoxLayout(self)
@@ -55,6 +57,33 @@ class ControlPanel(QWidget):
         self.tabs.addTab(self._create_manual_tab(), "手动控制")
         self.tabs.addTab(self._create_animation_tab(), "动画播放")
         layout.addWidget(self.tabs)
+        
+        # 视图设置
+        view_group = QGroupBox("视图设置")
+        view_layout = QVBoxLayout()
+        
+        # 渲染模式
+        mode_layout = QHBoxLayout()
+        mode_layout.addWidget(QLabel("渲染模式:"))
+        
+        self.render_mode_combo = QComboBox()
+        self.render_mode_combo.addItems([
+            "半透明+线框",
+            "仅线框",
+        ])
+        self.render_mode_combo.currentTextChanged.connect(self._on_render_mode_changed)
+        mode_layout.addWidget(self.render_mode_combo)
+        
+        view_layout.addLayout(mode_layout)
+        
+        # 显示骨架开关
+        self.show_skeleton_checkbox = QCheckBox("显示骨架")
+        self.show_skeleton_checkbox.setChecked(True)
+        self.show_skeleton_checkbox.toggled.connect(self.show_skeleton_toggled.emit)
+        view_layout.addWidget(self.show_skeleton_checkbox)
+        
+        view_group.setLayout(view_layout)
+        layout.addWidget(view_group)
         
         # 信息区域
         info_group = QGroupBox("信息")
@@ -331,3 +360,11 @@ class ControlPanel(QWidget):
         self.play_btn.setEnabled(not is_playing)
         self.pause_btn.setEnabled(is_playing)
         self.stop_btn.setEnabled(is_playing or self.time_slider.value() > 0)
+
+    def _on_render_mode_changed(self, mode_text):
+        """渲染模式改变"""
+        self.render_mode_changed.emit(mode_text)
+    
+    def get_current_render_mode(self):
+        """获取当前选择的渲染模式"""
+        return self.render_mode_combo.currentText()

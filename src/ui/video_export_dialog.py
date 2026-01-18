@@ -21,6 +21,7 @@ class VideoExportDialog(QDialog):
         self.animator = animator
         self.deformer = deformer
         self.gl_widget = gl_widget
+        self.parent_window = parent 
         
         # 录制状态
         self.is_recording = False

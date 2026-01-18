@@ -42,6 +42,7 @@ class GLWidget(QOpenGLWidget):
         self.show_skeleton = True
         self.show_mesh = True
         self.wireframe_mode = False
+        self.render_style = "transparent_wireframe"
         
         # 设置OpenGL格式
         fmt = QSurfaceFormat()
@@ -140,30 +141,55 @@ class GLWidget(QOpenGLWidget):
         
         normals = self._compute_normals(vertices)
         
-        # 半透明 + 线框
-        if not self.wireframe_mode:
-            # 半透明面
-            glEnable(GL_BLEND)
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-            glColor4f(0.8, 0.8, 0.8, 0.3)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-            
-            glBegin(GL_TRIANGLES)
-            for face in self.mesh.faces:
-                for idx in face.vertex_indices:
-                    n = normals[idx]
-                    v = vertices[idx]
-                    glNormal3f(n.x, n.y, n.z)
-                    glVertex3f(v.x, v.y, v.z)
-            glEnd()
-            
-            glDisable(GL_BLEND)
+        # 🔧 根据 wireframe_mode 选择渲染方式
+        if self.wireframe_mode:
+            # 仅线框模式
+            self._draw_wireframe_only(vertices)
+        else:
+            # 半透明+线框模式（默认）
+            self._draw_transparent_with_wireframe(vertices, normals)
+    
+    def _draw_transparent_with_wireframe(self, vertices, normals):
+        """半透明面 + 线框"""
+        # 先画半透明面
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glColor4f(0.8, 0.8, 0.8, 0.3)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
         
-        # 线框
+        glBegin(GL_TRIANGLES)
+        for face in self.mesh.faces:
+            for idx in face.vertex_indices:
+                n = normals[idx]
+                v = vertices[idx]
+                glNormal3f(n.x, n.y, n.z)
+                glVertex3f(v.x, v.y, v.z)
+        glEnd()
+        
+        glDisable(GL_BLEND)
+        
+        # 再画黑色线框
         glDisable(GL_LIGHTING)
         glColor3f(0.0, 0.0, 0.0)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         glLineWidth(1.0)
+        
+        glBegin(GL_TRIANGLES)
+        for face in self.mesh.faces:
+            for idx in face.vertex_indices:
+                v = vertices[idx]
+                glVertex3f(v.x, v.y, v.z)
+        glEnd()
+        
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
+        glEnable(GL_LIGHTING)
+
+    def _draw_wireframe_only(self, vertices):
+        """仅绘制线框"""
+        glDisable(GL_LIGHTING)
+        glColor3f(0.0, 0.0, 0.0)
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+        glLineWidth(1.5)
         
         glBegin(GL_TRIANGLES)
         for face in self.mesh.faces:
