@@ -9,7 +9,9 @@ import numpy as np
 from src.ui.gl_widget import GLWidget
 from src.ui.control_panel import ControlPanel
 from src.ui.export_dialog import ExportDialog
-
+from src.utils.file_io import load_animation
+from src.rendering.video_export import VideoExporter
+from src.ui.video_export_dialog import VideoExportDialog
 from src.core.mesh_loader import OBJLoader
 from src.core.skeleton_loader import SkeletonLoader 
 from src.animation.animator import Animator
@@ -35,6 +37,7 @@ class MainWindow(QMainWindow):
         # UI组件
         self.gl_widget = None
         self.control_panel = None
+        self.video_exporter = None
         
         # 定时器（动画播放）
         self.timer = QTimer()
@@ -61,6 +64,13 @@ class MainWindow(QMainWindow):
         # 右侧：控制面板
         self.control_panel = ControlPanel(self)
         self.control_panel.joint_transform_changed.connect(self._on_joint_transform_changed)
+        self.control_panel.animation_selected.connect(self._on_animation_selected)
+        self.control_panel.play_clicked.connect(self._on_play)
+        self.control_panel.pause_clicked.connect(self._on_pause)
+        self.control_panel.stop_clicked.connect(self._on_stop)
+        self.control_panel.time_seek.connect(self._on_time_seek)
+        self.control_panel.loop_toggled.connect(self._on_loop_toggled)
+        self.control_panel.export_video_clicked.connect(self._on_export_video)
         splitter.addWidget(self.control_panel)
         
         # 设置分割比例
@@ -143,6 +153,14 @@ class MainWindow(QMainWindow):
             # 更新UI
             self.gl_widget.set_data(self.mesh, self.skeleton, self.deformer)
             self.control_panel.set_skeleton(self.skeleton)
+
+            self.control_panel.load_animations(ANIMATIONS_DIR)
+            self.video_exporter = VideoExporter(
+                ELK_OBJ_PATH,
+                SKELETON_JSON_PATH,
+                WEIGHTS_DIR / "elk_weights.npz",
+                ANIMATIONS_DIR
+            )
             
             self.statusBar().showMessage(f"✓ 已加载: {self.mesh.get_vertex_count()}顶点, {self.skeleton.get_joint_count()}关节")
             
@@ -197,10 +215,13 @@ class MainWindow(QMainWindow):
         
         joint = self.skeleton.joint_map.get(joint_name)
         if joint:
-            # 更新局部变换（欧拉角 → 旋转矩阵）
-            from src.utils.math_utils import Matrix4
+            # 🔧 修复轴顺序：滑块(X,Y,Z) → 欧拉角(X,Y,Z)
+            # 如果你发现Y和Z反了，可能需要交换
             rx, ry, rz = rotation
-            joint.local_transform = Matrix4.from_euler(rx, ry, rz)
+            
+            # 方案1：直接使用（如果XYZ都对）
+            from src.utils.math_utils import Matrix4
+            joint.local_transform = Matrix4.from_euler(rx, rz, ry)
             
             # 更新全局变换
             self.skeleton.update_global_transforms()
@@ -212,9 +233,105 @@ class MainWindow(QMainWindow):
             self.gl_widget.update()
     
     def _on_timer(self):
-        """定时器回调（动画播放）"""
+        """定时器回调"""
         if self.animator and self.animator.is_playing:
-            self.animator.update(1.0 / 30.0)  # 30 FPS
+            self.animator.update(1.0 / 30.0)
             if self.deformer:
                 self.deformer.update()
             self.gl_widget.update()
+            
+            # 更新时间显示
+            if self.animator.current_clip:
+                self.control_panel.update_playback_time(
+                    self.animator.current_time,
+                    self.animator.current_clip.duration
+                )
+
+
+    def _on_animation_selected(self, anim_name):
+        """动画选择"""
+        try:
+            anim_path = ANIMATIONS_DIR / f"{anim_name}.json"
+            animation = load_animation(anim_path)
+            
+            self.animator.load_clip(animation)
+            self.statusBar().showMessage(f"✓ 已加载动画: {anim_name} ({animation.duration:.2f}s)")
+            
+            # 更新时间显示
+            self.control_panel.update_playback_time(0, animation.duration)
+            
+        except Exception as e:
+            QMessageBox.critical(self, "错误", f"加载动画失败:\n{e}")
+
+    def _on_play(self):
+        """播放"""
+        if self.animator and self.animator.current_clip:
+            self.animator.play()
+            self.timer.start(33)  # 30 FPS
+            self.control_panel.set_playing_state(True)
+            self.statusBar().showMessage("播放中...")
+
+    def _on_pause(self):
+        """暂停"""
+        if self.animator:
+            self.animator.pause()
+            self.timer.stop()
+            self.control_panel.set_playing_state(False)
+            self.statusBar().showMessage("已暂停")
+
+    def _on_stop(self):
+        """停止"""
+        if self.animator:
+            self.animator.stop()
+            self.timer.stop()
+            
+            # 重置骨架姿态
+            from src.utils.math_utils import Matrix4
+            for joint in self.skeleton.joints:
+                joint.local_transform = Matrix4.identity()
+            self.skeleton.update_global_transforms()
+            
+            if self.deformer:
+                self.deformer.update()
+            
+            self.gl_widget.update()
+            self.control_panel.set_playing_state(False)
+            
+            if self.animator.current_clip:
+                self.control_panel.update_playback_time(0, self.animator.current_clip.duration)
+            
+            self.statusBar().showMessage("已停止")
+
+    def _on_time_seek(self, ratio):
+        """时间轴拖动"""
+        if self.animator and self.animator.current_clip:
+            target_time = self.animator.current_clip.duration * ratio
+            self.animator.set_time(target_time)
+            
+            if self.deformer:
+                self.deformer.update()
+            
+            self.gl_widget.update()
+
+    def _on_loop_toggled(self, checked):
+        """循环开关"""
+        if self.animator:
+            self.animator.loop = checked
+
+    def _on_export_video(self):
+        """导出视频 - 使用新的录制方式"""
+        if not self.animator or not self.animator.current_clip:
+            QMessageBox.warning(self, "警告", "请先选择一个动画")
+            return
+        
+        # 使用新的导出对话框
+        from src.ui.video_export_dialog import VideoExportDialog
+        
+        dialog = VideoExportDialog(
+            self,
+            self.animator.current_clip.name,
+            self.animator,
+            self.deformer,
+            self.gl_widget
+        )
+        dialog.exec_()

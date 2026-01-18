@@ -282,3 +282,30 @@ class GLWidget(QOpenGLWidget):
         self.camera_distance *= 0.9 if delta > 0 else 1.1
         self.camera_distance = np.clip(self.camera_distance, 0.5, 20.0)
         self.update()
+
+    
+    def capture_frame(self):
+        """
+        捕获当前帧的图像
+        
+        Returns:
+            numpy数组 (height, width, 3) RGB格式
+        """
+        # 确保OpenGL上下文是当前的
+        self.makeCurrent()
+        
+        # 读取像素数据
+        width = self.width()
+        height = self.height()
+        
+        glPixelStorei(GL_PACK_ALIGNMENT, 1)
+        data = glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE)
+        
+        # 转换为numpy数组
+        import numpy as np
+        image = np.frombuffer(data, dtype=np.uint8).reshape(height, width, 3)
+        
+        # OpenGL的原点在左下角，需要上下翻转
+        image = np.flipud(image)
+        
+        return image

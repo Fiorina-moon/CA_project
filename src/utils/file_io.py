@@ -125,10 +125,10 @@ def load_animation(filepath: Path):
     
     # 延迟导入，避免循环依赖
     import importlib
-    keyframe_module = importlib.import_module('animation.keyframe')
+    keyframe_module = importlib.import_module('src.animation.keyframe')
     AnimationClip = keyframe_module.AnimationClip
     JointKeyframe = keyframe_module.JointKeyframe
-    
+        
     clip = AnimationClip(data["name"], data["duration"])
     
     for joint_name, keyframes_data in data["keyframes"].items():

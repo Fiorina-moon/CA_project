@@ -77,15 +77,33 @@ class ExportDialog(QDialog):
             
         except Exception as e:
             QMessageBox.critical(self, "错误", f"导出失败:\n{e}")
-    
+        
     def _export_skeleton(self):
-        """导出骨架结构"""
+        """导出骨架结构（应用显示旋转）"""
         file_path, _ = QFileDialog.getSaveFileName(
             self, "保存骨架", "skeleton.json", "JSON Files (*.json)"
         )
         
         if not file_path:
             return
+        
+        import numpy as np
+        
+        # 🔧 应用渲染旋转（绕X轴旋转90度）
+        angle = np.radians(90)
+        cos_a = np.cos(angle)
+        sin_a = np.sin(angle)
+        rotation_matrix = np.array([
+            [1, 0, 0],
+            [0, cos_a, -sin_a],
+            [0, sin_a, cos_a]
+        ])
+        
+        def apply_rotation(pos):
+            """应用旋转变换到位置"""
+            vec = np.array([pos.x, pos.y, pos.z])
+            rotated = rotation_matrix @ vec
+            return [float(rotated[0]), float(rotated[1]), float(rotated[2])]
         
         # 构建数据
         data = {
@@ -96,9 +114,9 @@ class ExportDialog(QDialog):
         for joint in self.skeleton.joints:
             data["joints"].append({
                 "name": joint.name,
-                "index": joint.index,
-                "head": [joint.head.x, joint.head.y, joint.head.z],
-                "tail": [joint.tail.x, joint.tail.y, joint.tail.z],
+                "index": int(joint.index),
+                "head": apply_rotation(joint.head),  # 🔧 应用旋转
+                "tail": apply_rotation(joint.tail),  # 🔧 应用旋转
                 "parent": joint.parent_name
             })
             
@@ -108,21 +126,12 @@ class ExportDialog(QDialog):
         # 保存
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
-    
-    def _export_weights(self):
-        """导出蒙皮权重"""
-        file_path, _ = QFileDialog.getSaveFileName(
-            self, "保存权重", "weights.npz", "NPZ Files (*.npz)"
-        )
         
-        if not file_path:
-            return
-        
-        # 保存
-        np.savez_compressed(file_path, weights=self.weights)
-    
+        print(f"✓ 骨架已导出（已应用显示旋转）: {file_path}")
+
+
     def _export_pose(self):
-        """导出当前姿态"""
+        """导出当前姿态（应用显示旋转）"""
         file_path, _ = QFileDialog.getSaveFileName(
             self, "保存姿态", "pose.json", "JSON Files (*.json)"
         )
@@ -130,21 +139,38 @@ class ExportDialog(QDialog):
         if not file_path:
             return
         
-        # 构建数据（导出每个关节的局部变换矩阵）
+        import numpy as np
+        
+        # 🔧 应用渲染旋转（绕X轴旋转90度）
+        angle = np.radians(90)
+        cos_a = np.cos(angle)
+        sin_a = np.sin(angle)
+        rotation_matrix = np.array([
+            [1, 0, 0],
+            [0, cos_a, -sin_a],
+            [0, sin_a, cos_a]
+        ])
+        
+        def apply_rotation(pos):
+            """应用旋转变换到位置"""
+            vec = np.array([pos.x, pos.y, pos.z])
+            rotated = rotation_matrix @ vec
+            return [float(rotated[0]), float(rotated[1]), float(rotated[2])]
+        
+        # 构建数据
         data = {"joints": {}}
         
         for joint in self.skeleton.joints:
-            # 将4x4矩阵转为列表
-            matrix = joint.local_transform.data.tolist()
+            # 局部变换矩阵（不需要旋转，这是相对变换）
+            matrix = [[float(x) for x in row] for row in joint.local_transform.data.tolist()]
+            
             data["joints"][joint.name] = {
                 "local_transform": matrix,
-                "position": [
-                    joint.current_position.x,
-                    joint.current_position.y,
-                    joint.current_position.z
-                ]
+                "position": apply_rotation(joint.current_position)  # 🔧 应用旋转
             }
         
         # 保存
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
+        
+        print(f"✓ 姿态已导出（已应用显示旋转）: {file_path}")
