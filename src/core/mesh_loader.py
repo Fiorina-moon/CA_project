@@ -111,3 +111,17 @@ class OBJLoader:
                 normal_indices.append(int(indices[2]) - 1)
         
         return Face(vertex_indices, normal_indices, texcoord_indices)
+    
+def load_obj(filepath) -> Mesh:
+    """
+    便捷函数：加载OBJ文件
+    
+    Args:
+        filepath: OBJ文件路径（字符串或Path对象）
+    
+    Returns:
+        Mesh对象
+    """
+    if isinstance(filepath, str):
+        filepath = Path(filepath)
+    return OBJLoader.load(filepath)

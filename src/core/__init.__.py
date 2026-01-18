@@ -5,7 +5,7 @@
 
 from .mesh import Mesh, Face
 from .skeleton import Skeleton, Joint
-from .mesh_loader import MeshLoader
+from .mesh_loader import OBJLoader
 from .skeleton_loader import SkeletonLoader
 
 __all__ = [
@@ -13,6 +13,6 @@ __all__ = [
     'Face',
     'Skeleton',
     'Joint',
-    'MeshLoader',
+    'OBJLoader',
     'SkeletonLoader',
 ]

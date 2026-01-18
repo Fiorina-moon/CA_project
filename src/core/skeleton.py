@@ -2,8 +2,7 @@
 骨架数据结构 - 修复版（支持完整LBS）
 """
 from typing import List, Dict, Optional
-import numpy as np
-from utils.math_utils import Vector3, Matrix4
+from src.utils.math_utils import Vector3, Matrix4
 
 
 class Joint:

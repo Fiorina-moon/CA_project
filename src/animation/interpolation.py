@@ -3,7 +3,7 @@
 """
 from typing import List
 from .keyframe import JointKeyframe
-from utils.math_utils import lerp  
+from src.utils.math_utils import lerp  
 
 
 def find_keyframe_interval(keyframes: List[JointKeyframe], time: float) -> tuple:

@@ -3,8 +3,8 @@
 """
 import json
 from pathlib import Path
-from core.skeleton import Skeleton, Joint
-from utils.math_utils import Vector3
+from src.core.skeleton import Skeleton, Joint
+from src.utils.math_utils import Vector3
 
 
 class SkeletonLoader:

@@ -3,7 +3,7 @@ Mesh数据结构
 """
 import numpy as np
 from typing import List, Tuple
-from utils.math_utils import Vector3
+from src.utils.math_utils import Vector3
 
 
 class Vertex:
