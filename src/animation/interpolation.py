@@ -2,7 +2,7 @@
 插值算法
 """
 from typing import List
-from animation.keyframe import JointKeyframe 
+from .keyframe import JointKeyframe
 from utils.math_utils import lerp  
 
 

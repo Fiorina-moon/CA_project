@@ -10,7 +10,7 @@ CA Project - 骨骼动画系统主入口
   help              显示帮助信息
 
 示例:
-  python main.py export  walk_cycle --angle 180 --fps 60
+  python main.py export  walk_circle --angle 180 --fps 60
   python main.py compute
   python main.py compute --max-influences 6
   python main.py list
